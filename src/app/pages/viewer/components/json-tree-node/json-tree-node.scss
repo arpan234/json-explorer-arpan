@@ -1,0 +1,96 @@
+.tree-node {
+    &.match {
+        background-color: rgba(255, 235, 59, 0.15);
+        border-radius: 2px;
+    }
+}
+
+.node-row {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    padding: 1px 0;
+    cursor: pointer;
+    border-radius: 2px;
+
+    &:hover {
+        background: var(--mat-sys-surface-container);
+    }
+}
+
+.toggle-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    color: var(--mat-sys-on-surface-variant);
+
+    .toggle-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+        transition: transform 0.15s ease;
+
+        &.expanded {
+            transform: rotate(90deg);
+        }
+    }
+}
+
+.toggle-placeholder {
+    width: 16px;
+    display: inline-block;
+}
+
+.node-key {
+    font-weight: 500;
+}
+
+.colon {
+    color: var(--mat-sys-on-surface-variant);
+    margin-right: 4px;
+}
+
+.node-value {
+    &.editable {
+        cursor: text;
+        border-radius: 2px;
+        padding: 0 2px;
+
+        &:hover {
+            outline: 1px dashed var(--mat-sys-outline);
+        }
+    }
+}
+
+.container-summary {
+    color: var(--mat-sys-on-surface-variant);
+    font-size: 0.85em;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+    font-family: inherit;
+}
+
+.edit-input {
+    font-family: inherit;
+    font-size: inherit;
+    border: 1px solid var(--mat-sys-primary);
+    border-radius: 3px;
+    padding: 1px 4px;
+    outline: none;
+    background: var(--mat-sys-surface);
+    color: var(--mat-sys-on-surface);
+    min-width: 60px;
+}
+
+.children {
+    border-left: 1px solid var(--mat-sys-outline-variant);
+    margin-left: 7px;
+}

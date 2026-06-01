@@ -1,0 +1,10 @@
+@if (path().length > 0) {
+    <nav class="breadcrumbs" aria-label="JSON path">
+        @for (segment of path(); track $index; let last = $last) {
+            <span class="segment">{{ segment }}</span>
+            @if (!last) {
+                <span class="separator">›</span>
+            }
+        }
+    </nav>
+}

@@ -1,0 +1,8 @@
+<div class="editor-container">
+    <ngx-monaco-editor
+        [options]="editorOptions()"
+        [ngModel]="json()"
+        (ngModelChange)="onEditorValueChange($event)"
+        (onInit)="onEditorInit()"
+    />
+</div>

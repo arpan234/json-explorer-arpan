@@ -1,0 +1,28 @@
+:host {
+    display: block;
+    height: 100%;
+    overflow: auto;
+}
+
+.table-container {
+    padding: 16px;
+
+    table {
+        width: 100%;
+    }
+
+    th {
+        text-transform: capitalize;
+        font-weight: 700;
+    }
+
+    td,
+    th {
+        font-family: 'Fira Code', 'Cascadia Code', monospace;
+        font-size: 0.85rem;
+        max-width: 300px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}

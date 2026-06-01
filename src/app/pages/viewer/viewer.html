@@ -1,0 +1,139 @@
+<div class="viewer-container">
+    <!-- Left Panel: Input -->
+    <div class="input-panel" [style.width.%]="panelWidth()">
+        <app-json-input (jsonParsed)="onJsonInput($event)" />
+    </div>
+
+    <!-- Resize Handle -->
+    <div class="resize-handle" (mousedown)="onResizeStart($event)"></div>
+
+    <!-- Right Panel: Output -->
+    <div class="output-panel">
+        @if (hasData()) {
+            <!-- Action Bar -->
+            <div class="action-bar">
+                <div class="action-bar__left">
+                    <app-breadcrumbs [path]="selectedPath()" />
+                    @if (selectedPath().length > 1) {
+                        <button
+                            mat-icon-button
+                            class="copy-path-btn"
+                            (click)="copyPath()"
+                            matTooltip="Copy JSON path"
+                        >
+                            <mat-icon>content_copy</mat-icon>
+                        </button>
+                    }
+                    @if (nodeStats(); as stats) {
+                        <span class="node-stats"
+                            >{{ stats.totalKeys }} keys · {{ stats.maxDepth }} levels</span
+                        >
+                    }
+                </div>
+                <div class="action-bar__right">
+                    <button mat-icon-button (click)="expandAll()" matTooltip="Expand all">
+                        <mat-icon>unfold_more</mat-icon>
+                    </button>
+                    <button mat-icon-button (click)="collapseAll()" matTooltip="Collapse all">
+                        <mat-icon>unfold_less</mat-icon>
+                    </button>
+                    <button
+                        mat-icon-button
+                        (click)="showSearch.set(!showSearch())"
+                        matTooltip="Search (Ctrl+F)"
+                    >
+                        <mat-icon>search</mat-icon>
+                    </button>
+                    <button
+                        mat-icon-button
+                        (click)="formatJson()"
+                        matTooltip="Format (Ctrl+Shift+F)"
+                    >
+                        <mat-icon>format_align_left</mat-icon>
+                    </button>
+                    <button
+                        mat-icon-button
+                        (click)="copyToClipboard()"
+                        matTooltip="Copy to clipboard"
+                    >
+                        <mat-icon>content_copy</mat-icon>
+                    </button>
+                    <button mat-icon-button (click)="downloadJson()" matTooltip="Download JSON">
+                        <mat-icon>download</mat-icon>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Search Bar -->
+            @if (showSearch()) {
+                <div class="search-bar">
+                    <mat-form-field appearance="outline" class="search-field">
+                        <mat-icon matPrefix>search</mat-icon>
+                        <input
+                            matInput
+                            placeholder="Search keys and values..."
+                            [ngModel]="searchQuery()"
+                            (ngModelChange)="searchQuery.set($event)"
+                        />
+                        @if (searchQuery()) {
+                            <span matSuffix class="match-count"
+                                >{{ searchMatches().size }} matches</span
+                            >
+                        }
+                    </mat-form-field>
+                </div>
+            }
+
+            <!-- View Tabs -->
+            <mat-tab-group
+                [selectedIndex]="selectedTabIndex"
+                (selectedIndexChange)="onTabChange($event)"
+                class="view-tabs"
+            >
+                <mat-tab label="Raw">
+                    <app-raw-editor [json]="rawJson()" (jsonChange)="onRawEditorChange($event)" />
+                </mat-tab>
+
+                <mat-tab label="Tree">
+                    @if (rootNode(); as root) {
+                        <div class="tree-container">
+                            <app-json-tree-node
+                                [node]="root"
+                                [searchMatches]="searchMatches()"
+                                [expandAllTrigger]="expandAllTrigger()"
+                                [collapseAllTrigger]="collapseAllTrigger()"
+                                (pathSelected)="onPathSelected($event)"
+                                (nodeEdited)="onNodeEdit($event)"
+                            />
+                        </div>
+                    }
+                </mat-tab>
+
+                <mat-tab label="Table" [disabled]="!isTableCompatible()">
+                    @if (rootNode(); as root) {
+                        <app-json-table [data]="root" />
+                    }
+                </mat-tab>
+
+                <mat-tab label="Chart" [disabled]="!isChartCompatible()">
+                    @if (rootNode(); as root) {
+                        <app-json-chart [data]="root" />
+                    }
+                </mat-tab>
+            </mat-tab-group>
+        } @else {
+            <div class="empty-state">
+                <mat-icon class="empty-icon">data_object</mat-icon>
+                <h2>No JSON loaded</h2>
+                <p>Paste JSON in the input panel or upload a .json file to get started.</p>
+            </div>
+        }
+
+        @if (parseError(); as error) {
+            <div class="error-banner">
+                <mat-icon>error_outline</mat-icon>
+                <span>{{ error }}</span>
+            </div>
+        }
+    </div>
+</div>

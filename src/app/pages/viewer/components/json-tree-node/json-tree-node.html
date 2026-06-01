@@ -1,0 +1,71 @@
+<div class="tree-node" [class.match]="isMatch()" [style.padding-left.px]="depth() === 0 ? 0 : 10">
+    <div
+        class="node-row"
+        (click)="pathSelected.emit(node().path)"
+        (keydown.enter)="pathSelected.emit(node().path)"
+        (keydown.space)="$event.preventDefault(); pathSelected.emit(node().path)"
+    >
+        <!-- Expand/Collapse Toggle -->
+        @if (isContainer()) {
+            <button class="toggle-btn" (click)="toggleExpand(); $event.stopPropagation()">
+                <mat-icon class="toggle-icon" [class.expanded]="expanded()">
+                    chevron_right
+                </mat-icon>
+            </button>
+        } @else {
+            <span class="toggle-placeholder"></span>
+        }
+
+        <!-- Key -->
+        <span class="node-key" [style.color]="keyColor()">{{ node().key }}</span>
+        <span class="colon">:</span>
+
+        <!-- Value -->
+        @if (isEditing()) {
+            <input
+                class="edit-input"
+                [ngModel]="editValue()"
+                (ngModelChange)="editValue.set($event)"
+                (keydown.enter)="saveEdit()"
+                (keydown.escape)="cancelEdit()"
+                (blur)="saveEdit()"
+                autofocus
+            />
+        } @else if (isContainer()) {
+            <button
+                class="container-summary"
+                type="button"
+                (click)="toggleExpand(); $event.stopPropagation()"
+            >
+                {{ containerSummary() }}
+            </button>
+        } @else {
+            <span
+                class="node-value"
+                [style.color]="valueColor()"
+                [class.editable]="!isContainer()"
+                (dblclick)="startEdit(); $event.stopPropagation()"
+                title="Double-click to edit"
+            >
+                {{ displayValue() }}
+            </span>
+        }
+    </div>
+
+    <!-- Children -->
+    @if (isContainer() && expanded() && node().children) {
+        <div class="children">
+            @for (child of node().children; track child.path.join('.')) {
+                <app-json-tree-node
+                    [node]="child"
+                    [searchMatches]="searchMatches()"
+                    [depth]="depth() + 1"
+                    [expandAllTrigger]="expandAllTrigger()"
+                    [collapseAllTrigger]="collapseAllTrigger()"
+                    (pathSelected)="onChildPathSelected($event)"
+                    (nodeEdited)="onChildEdit($event)"
+                />
+            }
+        </div>
+    }
+</div>

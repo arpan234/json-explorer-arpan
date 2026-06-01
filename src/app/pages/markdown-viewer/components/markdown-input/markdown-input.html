@@ -1,0 +1,55 @@
+<div
+    class="input-container"
+    (dragover)="onDragOver($event)"
+    (dragleave)="onDragLeave()"
+    (drop)="onDrop($event)"
+    [class.drag-over]="isDragOver()"
+>
+    <div class="input-header">
+        <span class="input-title">Markdown Input</span>
+        <div class="input-actions">
+            <button mat-button (click)="onLoadSample()">
+                <mat-icon>science</mat-icon>
+                Sample
+            </button>
+            <button mat-button (click)="onClear()">
+                <mat-icon>clear</mat-icon>
+                Clear
+            </button>
+        </div>
+    </div>
+
+    <textarea
+        class="markdown-textarea"
+        [ngModel]="inputText()"
+        (ngModelChange)="inputText.set($event)"
+        (input)="onInput()"
+        placeholder="Paste or type your Markdown here..."
+        spellcheck="false"
+    ></textarea>
+
+    <div class="input-footer">
+        <button mat-flat-button (click)="onInput()">
+            <mat-icon>visibility</mat-icon>
+            Preview
+        </button>
+        <input
+            #fileInput
+            type="file"
+            accept=".md,.markdown,text/markdown"
+            (change)="onFileSelect($event)"
+            hidden
+        />
+        <button mat-stroked-button (click)="fileInput.click()">
+            <mat-icon>upload_file</mat-icon>
+            Upload File
+        </button>
+    </div>
+
+    @if (isDragOver()) {
+        <div class="drop-overlay">
+            <mat-icon>file_download</mat-icon>
+            <span>Drop Markdown file here</span>
+        </div>
+    }
+</div>

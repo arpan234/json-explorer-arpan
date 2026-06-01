@@ -1,0 +1,56 @@
+<div class="chart-container">
+    <div class="chart-controls">
+        <mat-button-toggle-group
+            [ngModel]="chartType()"
+            (ngModelChange)="chartType.set($event)"
+            aria-label="Chart type"
+        >
+            <mat-button-toggle value="bar">Bar</mat-button-toggle>
+            <mat-button-toggle value="line">Line</mat-button-toggle>
+            <mat-button-toggle value="pie">Pie</mat-button-toggle>
+        </mat-button-toggle-group>
+
+        @if (numericFields().length > 1) {
+            <mat-button-toggle-group
+                [ngModel]="activeField()"
+                (ngModelChange)="onFieldChange($event)"
+                aria-label="Data field"
+            >
+                @for (field of numericFields(); track field) {
+                    <mat-button-toggle [value]="field">{{ field }}</mat-button-toggle>
+                }
+            </mat-button-toggle-group>
+        }
+    </div>
+
+    <div class="chart-area">
+        @switch (chartType()) {
+            @case ('bar') {
+                <ngx-charts-bar-vertical
+                    [results]="chartData()"
+                    [xAxis]="true"
+                    [yAxis]="true"
+                    [showXAxisLabel]="true"
+                    [showYAxisLabel]="true"
+                    [xAxisLabel]="labelField()"
+                    [yAxisLabel]="activeField()"
+                    [gradient]="true"
+                />
+            }
+            @case ('line') {
+                <ngx-charts-line-chart
+                    [results]="[{ name: activeField(), series: chartData() }]"
+                    [xAxis]="true"
+                    [yAxis]="true"
+                    [showXAxisLabel]="true"
+                    [showYAxisLabel]="true"
+                    [xAxisLabel]="labelField()"
+                    [yAxisLabel]="activeField()"
+                />
+            }
+            @case ('pie') {
+                <ngx-charts-pie-chart [results]="chartData()" [labels]="true" [doughnut]="true" />
+            }
+        }
+    </div>
+</div>

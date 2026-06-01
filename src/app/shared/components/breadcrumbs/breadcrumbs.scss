@@ -1,0 +1,21 @@
+.breadcrumbs {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 16px;
+    font-size: 0.85rem;
+    color: var(--mat-sys-on-surface-variant);
+    background: var(--mat-sys-surface-container);
+    border-radius: 4px;
+    overflow-x: auto;
+    white-space: nowrap;
+}
+
+.segment {
+    color: var(--mat-sys-primary);
+    font-family: monospace;
+}
+
+.separator {
+    color: var(--mat-sys-outline);
+}

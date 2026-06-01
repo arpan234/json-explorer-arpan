@@ -1,0 +1,22 @@
+<div class="viewer-container">
+    <!-- Left Panel: Input -->
+    <div class="input-panel" [style.width.%]="panelWidth()">
+        <app-markdown-input (markdownParsed)="onMarkdownInput($event)" />
+    </div>
+
+    <!-- Resize Handle -->
+    <div class="resize-handle" (mousedown)="onResizeStart($event)"></div>
+
+    <!-- Right Panel: Preview -->
+    <div class="output-panel">
+        @if (markdownContent()) {
+            <app-markdown-preview [content]="markdownContent()" />
+        } @else {
+            <div class="empty-state">
+                <mat-icon class="empty-icon">description</mat-icon>
+                <h2>No Markdown loaded</h2>
+                <p>Paste Markdown in the input panel or upload a .md file to get started.</p>
+            </div>
+        }
+    </div>
+</div>

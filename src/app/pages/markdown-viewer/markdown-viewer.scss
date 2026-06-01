@@ -1,0 +1,62 @@
+:host {
+    display: block;
+    height: calc(100vh - 64px);
+}
+
+.viewer-container {
+    display: flex;
+    height: 100%;
+}
+
+.input-panel {
+    min-width: 200px;
+    border-right: 1px solid var(--mat-sys-outline-variant);
+    overflow: hidden;
+}
+
+.resize-handle {
+    width: 5px;
+    cursor: col-resize;
+    background: transparent;
+    flex-shrink: 0;
+    transition: background 0.2s;
+    z-index: 10;
+
+    &:hover {
+        background: var(--mat-sys-primary);
+    }
+}
+
+.output-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--mat-sys-on-surface-variant);
+
+    .empty-icon {
+        font-size: 64px;
+        width: 64px;
+        height: 64px;
+        opacity: 0.3;
+        margin-bottom: 16px;
+    }
+
+    h2 {
+        margin: 0 0 8px;
+        font-weight: 400;
+    }
+
+    p {
+        margin: 0;
+        font-size: 0.9rem;
+    }
+}
