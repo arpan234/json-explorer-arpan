@@ -1,22 +1,90 @@
 :host {
     display: block;
+    position: relative;
+    z-index: 100;
+}
+
+mat-toolbar {
+    background: var(--app-glass-bg) !important;
+    color: var(--mat-sys-on-surface) !important;
+    backdrop-filter: blur(var(--app-glass-blur));
+    border-bottom: 1px solid var(--app-glass-border);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.03), var(--app-neon-glow);
+    padding: 0 24px !important;
+    height: 64px;
 }
 
 .app-icon {
-    margin-right: 8px;
+    margin-right: 10px;
+    color: var(--mat-sys-primary);
+    filter: drop-shadow(0 0 5px var(--mat-sys-primary));
+    animation: pulse-glow 3s infinite ease-in-out;
 }
 
 .app-title {
-    font-size: 1.1rem;
-    font-weight: 500;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    background: linear-gradient(135deg, var(--mat-sys-on-surface) 30%, var(--mat-sys-primary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
 .nav-tabs {
-    margin-left: 24px;
+    margin-left: 32px;
+    height: 100%;
+
+    ::ng-deep {
+        .mat-mdc-tab-link-container {
+            height: 100%;
+        }
+
+        .mat-mdc-tab-links {
+            height: 100%;
+            align-items: center;
+        }
+
+        .mat-mdc-tab-link {
+            height: 40px !important;
+            border-radius: 8px;
+            margin: 0 4px;
+            padding: 0 16px !important;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--mat-sys-on-surface-variant) !important;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0.8;
+
+            .mdc-tab-indicator__line {
+                display: none; // hide standard bottom line
+            }
+
+            &:hover {
+                background: rgba(255, 255, 255, 0.04);
+                color: var(--mat-sys-on-surface) !important;
+                opacity: 1;
+            }
+
+            &.mat-mdc-tab-disabled {
+                opacity: 0.35;
+            }
+
+            &[active="true"] {
+                background: rgba(0, 240, 255, 0.08);
+                border: 1px solid var(--app-glass-border);
+                color: var(--mat-sys-primary) !important;
+                font-weight: 600;
+                opacity: 1;
+                box-shadow: var(--app-neon-glow);
+            }
+        }
+    }
 }
 
 .nav-icon {
-    margin-right: 6px;
+    margin-right: 8px;
     font-size: 18px;
     width: 18px;
     height: 18px;
@@ -24,4 +92,27 @@
 
 .spacer {
     flex: 1 1 auto;
+}
+
+button[mat-icon-button] {
+    color: var(--mat-sys-on-surface-variant);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &:hover {
+        color: var(--mat-sys-primary);
+        background: rgba(0, 240, 255, 0.05);
+        transform: rotate(30deg) scale(1.05);
+        box-shadow: 0 0 15px rgba(0, 240, 255, 0.1);
+    }
+}
+
+@keyframes pulse-glow {
+    0%, 100% {
+        filter: drop-shadow(0 0 3px var(--mat-sys-primary));
+        opacity: 0.9;
+    }
+    50% {
+        filter: drop-shadow(0 0 8px var(--mat-sys-primary));
+        opacity: 1;
+    }
 }

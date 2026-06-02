@@ -26,6 +26,7 @@ import { JsonTreeNodeComponent } from './components/json-tree-node/json-tree-nod
 import { RawEditorComponent } from './components/raw-editor/raw-editor';
 import { JsonTableComponent } from './components/json-table/json-table';
 import { JsonChartComponent } from './components/json-chart/json-chart';
+import { JsonCodegenComponent } from './components/json-codegen/json-codegen';
 
 @Component({
     selector: 'app-viewer',
@@ -44,6 +45,7 @@ import { JsonChartComponent } from './components/json-chart/json-chart';
         RawEditorComponent,
         JsonTableComponent,
         JsonChartComponent,
+        JsonCodegenComponent,
     ],
     templateUrl: './viewer.html',
     styleUrl: './viewer.scss',
@@ -221,12 +223,12 @@ export class ViewerComponent {
     }
 
     onTabChange(index: number): void {
-        const modes: ViewMode[] = ['raw', 'tree', 'table', 'chart'];
+        const modes: ViewMode[] = ['raw', 'tree', 'table', 'chart', 'codegen'];
         this.viewMode.set(modes[index] ?? 'tree');
     }
 
     get selectedTabIndex(): number {
-        const modes: ViewMode[] = ['raw', 'tree', 'table', 'chart'];
+        const modes: ViewMode[] = ['raw', 'tree', 'table', 'chart', 'codegen'];
         return modes.indexOf(this.viewMode());
     }
 

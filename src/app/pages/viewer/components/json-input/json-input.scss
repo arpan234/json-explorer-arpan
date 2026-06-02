@@ -8,10 +8,14 @@
     flex-direction: column;
     height: 100%;
     position: relative;
+    background: var(--mat-sys-surface-container-low);
 
     &.drag-over {
-        outline: 2px dashed var(--mat-sys-primary);
-        outline-offset: -2px;
+        .drop-overlay {
+            opacity: 1;
+            pointer-events: auto;
+            transform: scale(1);
+        }
     }
 }
 
@@ -20,18 +24,35 @@
     align-items: center;
     justify-content: space-between;
     padding: 8px 16px;
-    border-bottom: 1px solid var(--mat-sys-outline-variant);
-    background: var(--mat-sys-surface-container);
+    border-bottom: 1px solid var(--app-glass-border);
+    background: var(--app-glass-bg);
+    backdrop-filter: blur(var(--app-glass-blur));
+    height: 48px;
 }
 
 .input-title {
-    font-weight: 500;
-    font-size: 0.9rem;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 600;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--mat-sys-on-surface);
 }
 
 .input-actions {
     display: flex;
     gap: 4px;
+
+    button[mat-icon-button] {
+        color: var(--mat-sys-on-surface-variant);
+        transition: all 0.2s ease;
+
+        &:hover {
+            color: var(--mat-sys-primary);
+            background: rgba(0, 240, 255, 0.05);
+            box-shadow: 0 0 8px rgba(0, 240, 255, 0.1);
+        }
+    }
 }
 
 .json-textarea {
@@ -41,16 +62,20 @@
     border: none;
     outline: none;
     resize: none;
-    font-family: 'Fira Code', 'Cascadia Code', 'JetBrains Mono', monospace;
     font-size: 0.85rem;
     line-height: 1.5;
-    background: var(--mat-sys-surface);
+    background: transparent;
     color: var(--mat-sys-on-surface);
     box-sizing: border-box;
+    transition: background-color 0.2s ease;
 
     &::placeholder {
         color: var(--mat-sys-on-surface-variant);
-        opacity: 0.5;
+        opacity: 0.4;
+    }
+
+    &:focus {
+        background: rgba(0, 240, 255, 0.01);
     }
 }
 
@@ -58,37 +83,70 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 8px 16px;
+    padding: 10px 16px;
     background: var(--mat-sys-error-container);
     color: var(--mat-sys-on-error-container);
-    font-size: 0.85rem;
+    font-size: 0.82rem;
+    font-weight: 500;
+    border-top: 1px solid rgba(255, 0, 0, 0.1);
 }
 
 .input-footer {
     display: flex;
     gap: 8px;
-    padding: 12px 16px;
-    border-top: 1px solid var(--mat-sys-outline-variant);
-    background: var(--mat-sys-surface-container);
+    padding: 10px 16px;
+    border-top: 1px solid var(--app-glass-border);
+    background: var(--app-glass-bg);
+    backdrop-filter: blur(var(--app-glass-blur));
+    height: 52px;
+    align-items: center;
+
+    button {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 600;
+        font-size: 0.8rem;
+        letter-spacing: 0.3px;
+        border-radius: 6px;
+    }
 }
 
 .drop-overlay {
     position: absolute;
-    inset: 0;
+    inset: 12px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    background: rgba(var(--mat-sys-primary), 0.1);
-    backdrop-filter: blur(2px);
-    z-index: 10;
-    font-size: 1.1rem;
+    gap: 12px;
+    background: rgba(7, 10, 19, 0.9);
+    border: 2px dashed var(--mat-sys-primary);
+    box-shadow: inset var(--app-neon-glow), var(--app-neon-glow);
+    border-radius: 12px;
+    backdrop-filter: blur(8px);
+    z-index: 100;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 1.05rem;
+    font-weight: 600;
     color: var(--mat-sys-primary);
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.95);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
     mat-icon {
         font-size: 48px;
         width: 48px;
         height: 48px;
+        filter: drop-shadow(0 0 8px var(--mat-sys-primary));
+        animation: float-icon 2s infinite ease-in-out;
+    }
+}
+
+@keyframes float-icon {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-8px);
     }
 }

@@ -1,0 +1,30 @@
+<div class="codegen-container">
+    <div class="codegen-header">
+        <mat-button-toggle-group
+            [ngModel]="selectedLanguage()"
+            (ngModelChange)="selectedLanguage.set($event)"
+            aria-label="Target language"
+        >
+            <mat-button-toggle value="typescript">TypeScript</mat-button-toggle>
+            <mat-button-toggle value="go">Go</mat-button-toggle>
+            <mat-button-toggle value="python">Python</mat-button-toggle>
+            <mat-button-toggle value="sql">SQL</mat-button-toggle>
+        </mat-button-toggle-group>
+
+        <button
+            mat-icon-button
+            (click)="copyCode()"
+            matTooltip="Copy generated code"
+            [disabled]="!generatedCode()"
+        >
+            <mat-icon>content_copy</mat-icon>
+        </button>
+    </div>
+
+    <div class="editor-wrapper">
+        <ngx-monaco-editor
+            [options]="editorOptions()"
+            [ngModel]="generatedCode()"
+        />
+    </div>
+</div>

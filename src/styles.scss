@@ -1,8 +1,4 @@
 // Include theming for Angular Material with `mat.theme()`.
-// This Sass mixin will define CSS variables that are used for styling Angular Material
-// components according to the Material 3 design spec.
-// Learn more about theming and how to use it for your application's
-// custom components at https://material.angular.dev/guide/theming
 @use '@angular/material' as mat;
 
 html {
@@ -19,14 +15,44 @@ html {
     );
 }
 
+:root:not(.dark-theme) {
+    // Elegant futuristic light design
+    --mat-sys-primary: #6366f1; // Indigo
+    --mat-sys-on-primary: #ffffff;
+    --mat-sys-surface: #f8fafc;
+    --mat-sys-on-surface: #0f172a;
+    --mat-sys-on-surface-variant: #64748b;
+    --mat-sys-surface-container: #ffffff;
+    --mat-sys-surface-container-low: #f1f5f9;
+    --mat-sys-outline-variant: rgba(99, 102, 241, 0.1);
+    
+    // Glassmorphism tokens
+    --app-glass-bg: rgba(255, 255, 255, 0.75);
+    --app-glass-border: rgba(99, 102, 241, 0.12);
+    --app-glass-blur: 12px;
+    --app-neon-glow: 0 0 15px rgba(99, 102, 241, 0.15);
+    
+    // Type colors (light mode)
+    --type-color-string: #0d9488;
+    --type-color-number: #2563eb;
+    --type-color-boolean: #ea580c;
+    --type-color-null: #64748b;
+    --type-color-object: #7c3aed;
+    --type-color-array: #7c3aed;
+
+    --scrollbar-thumb: rgba(99, 102, 241, 0.2);
+    --scrollbar-thumb-hover: rgba(99, 102, 241, 0.4);
+}
+
 body {
     color-scheme: light;
     background-color: var(--mat-sys-surface);
     color: var(--mat-sys-on-surface);
-    font: var(--mat-sys-body-medium);
+    font-family: 'Plus Jakarta Sans', 'Roboto', sans-serif !important;
     margin: 0;
     height: 100%;
     overflow: hidden;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .dark-theme {
@@ -42,4 +68,61 @@ body {
         )
     );
     color-scheme: dark;
+
+    // Deep space neon dark theme overrides
+    --mat-sys-primary: #00f0ff; // Neon Cyan
+    --mat-sys-on-primary: #070a13;
+    --mat-sys-surface: #070a13;
+    --mat-sys-on-surface: #f1f5f9;
+    --mat-sys-on-surface-variant: #94a3b8;
+    --mat-sys-surface-container: #0f1322;
+    --mat-sys-surface-container-low: #04060c;
+    --mat-sys-outline-variant: rgba(0, 240, 255, 0.15);
+
+    // Glassmorphism tokens
+    --app-glass-bg: rgba(15, 19, 35, 0.65);
+    --app-glass-border: rgba(0, 240, 255, 0.18);
+    --app-glass-blur: 16px;
+    --app-neon-glow: 0 0 20px rgba(0, 240, 255, 0.35);
+
+    // Type colors (dark mode)
+    --type-color-string: #4ade80;  // Emerald green
+    --type-color-number: #38bdf8;  // Light blue
+    --type-color-boolean: #fb923c; // Warm orange
+    --type-color-null: #64748b;    // Slate gray
+    --type-color-object: #c084fc;  // Bright purple
+    --type-color-array: #c084fc;
+
+    --scrollbar-thumb: rgba(0, 240, 255, 0.2);
+    --scrollbar-thumb-hover: rgba(0, 240, 255, 0.5);
+}
+
+// Global Scrollbar Styling
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb, rgba(128, 128, 128, 0.2));
+    border-radius: 4px;
+    transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-thumb-hover, rgba(128, 128, 128, 0.4));
+}
+
+// Apply code font to all code containers
+.tree-container, .json-textarea, ngx-monaco-editor, code, pre {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace !important;
+}
+
+// Global visual transitions
+* {
+    box-sizing: border-box;
 }

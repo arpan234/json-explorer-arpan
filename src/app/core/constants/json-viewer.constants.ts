@@ -1,16 +1,22 @@
 import { JsonValueType } from '../interfaces';
 
 export const TYPE_COLORS: Record<JsonValueType, string> = {
-    string: '#22863a',
-    number: '#005cc5',
-    boolean: '#e36209',
-    null: '#6a737d',
-    object: '#6f42c1',
-    array: '#6f42c1',
+    string: 'var(--type-color-string, #22863a)',
+    number: 'var(--type-color-number, #005cc5)',
+    boolean: 'var(--type-color-boolean, #e36209)',
+    null: 'var(--type-color-null, #6a737d)',
+    object: 'var(--type-color-object, #6f42c1)',
+    array: 'var(--type-color-array, #6f42c1)',
 };
 
-export const ROOT_KEY_COLOR = '#fdd835';
-export const NESTED_KEY_COLORS = ['#1e88e5', '#43a047', '#fb8c00', '#8e24aa', '#e53935'];
+export const ROOT_KEY_COLOR = 'var(--mat-sys-primary, #00f0ff)';
+export const NESTED_KEY_COLORS = [
+    '#ff79c6', // Neon Pink
+    '#50fa7b', // Neon Green
+    '#ffb86c', // Neon Orange
+    '#bd93f9', // Neon Purple
+    '#ff5555', // Neon Red
+];
 
 export const getKeyColorByDepth = (depth: number): string => {
     if (depth <= 0) return ROOT_KEY_COLOR;
@@ -28,6 +34,6 @@ export const DEFAULT_MONACO_OPTIONS: Record<string, unknown> = {
     wordWrap: 'on',
 };
 
-export const VIEW_MODES = ['raw', 'tree', 'table', 'chart'] as const;
+export const VIEW_MODES = ['raw', 'tree', 'table', 'chart', 'codegen'] as const;
 
 export type ViewMode = (typeof VIEW_MODES)[number];

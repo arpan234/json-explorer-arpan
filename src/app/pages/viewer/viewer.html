@@ -199,6 +199,10 @@
                         <app-json-chart [data]="root" />
                     }
                 </mat-tab>
+
+                <mat-tab label="Code Gen">
+                    <app-json-codegen [rawJson]="rawJson()" />
+                </mat-tab>
             </mat-tab-group>
         } @else {
             <div class="empty-state">
