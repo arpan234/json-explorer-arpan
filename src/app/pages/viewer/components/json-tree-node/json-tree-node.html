@@ -1,6 +1,7 @@
-<div class="tree-node" [class.match]="isMatch()" [style.padding-left.px]="depth() === 0 ? 0 : 10">
+<div class="tree-node" [class.match]="isDirectMatch()" [class.active-match]="isActiveMatch()" [style.padding-left.px]="depth() === 0 ? 0 : 10">
     <div
         class="node-row"
+        [id]="'node-' + pathKey()"
         (click)="pathSelected.emit(node().path)"
         (keydown.enter)="pathSelected.emit(node().path)"
         (keydown.space)="$event.preventDefault(); pathSelected.emit(node().path)"
@@ -17,7 +18,11 @@
         }
 
         <!-- Key -->
-        <span class="node-key" [style.color]="keyColor()">{{ node().key }}</span>
+        <span class="node-key" [style.color]="keyColor()">
+            @for (seg of keySegments(); track $index) {
+                <span [class.highlight-text]="seg.match">{{ seg.text }}</span>
+            }
+        </span>
         <span class="colon">:</span>
 
         <!-- Value -->
@@ -47,7 +52,9 @@
                 (dblclick)="startEdit(); $event.stopPropagation()"
                 title="Double-click to edit"
             >
-                {{ displayValue() }}
+                @for (seg of valueSegments(); track $index) {
+                    <span [class.highlight-text]="seg.match">{{ seg.text }}</span>
+                }
             </span>
         }
     </div>
@@ -58,7 +65,13 @@
             @for (child of node().children; track child.path.join('.')) {
                 <app-json-tree-node
                     [node]="child"
-                    [searchMatches]="searchMatches()"
+                    [searchQuery]="searchQuery()"
+                    [searchCaseSensitive]="searchCaseSensitive()"
+                    [searchRegex]="searchRegex()"
+                    [searchKeys]="searchKeys()"
+                    [searchValues]="searchValues()"
+                    [expandedPaths]="expandedPaths()"
+                    [activeMatchPath]="activeMatchPath()"
                     [depth]="depth() + 1"
                     [expandAllTrigger]="expandAllTrigger()"
                     [collapseAllTrigger]="collapseAllTrigger()"

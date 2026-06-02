@@ -67,20 +67,93 @@
             <!-- Search Bar -->
             @if (showSearch()) {
                 <div class="search-bar">
-                    <mat-form-field appearance="outline" class="search-field">
-                        <mat-icon matPrefix>search</mat-icon>
-                        <input
-                            matInput
-                            placeholder="Search keys and values..."
-                            [ngModel]="searchQuery()"
-                            (ngModelChange)="searchQuery.set($event)"
-                        />
-                        @if (searchQuery()) {
-                            <span matSuffix class="match-count"
-                                >{{ searchMatches().size }} matches</span
+                    <div class="search-bar-row">
+                        <mat-form-field appearance="outline" class="search-field">
+                            <mat-icon matPrefix>search</mat-icon>
+                            <input
+                                matInput
+                                placeholder="Search keys and values..."
+                                [ngModel]="searchQuery()"
+                                (ngModelChange)="searchQuery.set($event)"
+                                (keydown.enter)="onSearchEnter($event)"
+                            />
+                            @if (searchQuery()) {
+                                <span matSuffix class="match-count">
+                                    @if (directMatches().length > 0) {
+                                        {{ activeMatchIndex() + 1 }} of {{ directMatches().length }}
+                                    } @else {
+                                        0 matches
+                                    }
+                                </span>
+                            }
+                        </mat-form-field>
+
+                        <div class="search-actions">
+                            <button
+                                type="button"
+                                class="search-option-btn"
+                                [class.active]="searchCaseSensitive()"
+                                (click)="searchCaseSensitive.set(!searchCaseSensitive())"
+                                matTooltip="Match Case (Aa)"
+                                matTooltipPosition="above"
                             >
-                        }
-                    </mat-form-field>
+                                Aa
+                            </button>
+                            <button
+                                type="button"
+                                class="search-option-btn"
+                                [class.active]="searchRegex()"
+                                (click)="searchRegex.set(!searchRegex())"
+                                matTooltip="Use Regular Expression (.*)"
+                                matTooltipPosition="above"
+                            >
+                                .*
+                            </button>
+                            <div class="search-divider"></div>
+                            <button
+                                type="button"
+                                class="search-option-btn"
+                                [class.active]="searchKeys()"
+                                (click)="searchKeys.set(!searchKeys())"
+                                matTooltip="Search Keys"
+                                matTooltipPosition="above"
+                            >
+                                Keys
+                            </button>
+                            <button
+                                type="button"
+                                class="search-option-btn"
+                                [class.active]="searchValues()"
+                                (click)="searchValues.set(!searchValues())"
+                                matTooltip="Search Values"
+                                matTooltipPosition="above"
+                            >
+                                Values
+                            </button>
+
+                            @if (searchQuery() && directMatches().length > 0) {
+                                <div class="search-divider"></div>
+                                <button
+                                    type="button"
+                                    class="nav-arrow-btn"
+                                    (click)="prevMatch()"
+                                    matTooltip="Previous Match (Shift+Enter)"
+                                    matTooltipPosition="above"
+                                >
+                                    <mat-icon>arrow_upward</mat-icon>
+                                </button>
+                                <button
+                                    type="button"
+                                    class="nav-arrow-btn"
+                                    (click)="nextMatch()"
+                                    matTooltip="Next Match (Enter)"
+                                    matTooltipPosition="above"
+                                >
+                                    <mat-icon>arrow_downward</mat-icon>
+                                </button>
+                            }
+                        </div>
+                    </div>
                 </div>
             }
 
@@ -99,7 +172,13 @@
                         <div class="tree-container">
                             <app-json-tree-node
                                 [node]="root"
-                                [searchMatches]="searchMatches()"
+                                [searchQuery]="searchQuery()"
+                                [searchCaseSensitive]="searchCaseSensitive()"
+                                [searchRegex]="searchRegex()"
+                                [searchKeys]="searchKeys()"
+                                [searchValues]="searchValues()"
+                                [expandedPaths]="expandedPaths()"
+                                [activeMatchPath]="activeMatchPath()"
                                 [expandAllTrigger]="expandAllTrigger()"
                                 [collapseAllTrigger]="collapseAllTrigger()"
                                 (pathSelected)="onPathSelected($event)"

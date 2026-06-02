@@ -5,6 +5,7 @@ import {
     inject,
     signal,
     HostListener,
+    effect,
 } from '@angular/core';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatButtonModule } from '@angular/material/button';
@@ -62,6 +63,13 @@ export class ViewerComponent {
     readonly expandAllTrigger = signal(0);
     readonly collapseAllTrigger = signal(0);
 
+    // Advanced search options
+    readonly searchCaseSensitive = signal(false);
+    readonly searchRegex = signal(false);
+    readonly searchKeys = signal(true);
+    readonly searchValues = signal(true);
+    readonly activeMatchIndex = signal(-1);
+
     readonly parseResult = computed(() => {
         const raw = this.rawJson();
         if (!raw.trim()) return { data: null, error: null };
@@ -71,12 +79,71 @@ export class ViewerComponent {
     readonly rootNode = computed(() => this.parseResult().data);
     readonly parseError = computed(() => this.parseResult().error);
 
-    readonly searchMatches = computed(() => {
+    readonly searchResults = computed(() => {
         const root = this.rootNode();
         const query = this.searchQuery();
-        if (!root || !query.trim()) return new Set<string>();
-        return this.searchService.search(root, query);
+        if (!root) {
+            return { directMatches: [], expandedPaths: new Set<string>() };
+        }
+        return this.searchService.search(root, query, {
+            caseSensitive: this.searchCaseSensitive(),
+            isRegex: this.searchRegex(),
+            searchKeys: this.searchKeys(),
+            searchValues: this.searchValues(),
+        });
     });
+
+    readonly directMatches = computed(() => this.searchResults().directMatches);
+    readonly expandedPaths = computed(() => this.searchResults().expandedPaths);
+
+    readonly activeMatchPath = computed(() => {
+        const index = this.activeMatchIndex();
+        const matches = this.directMatches();
+        if (index >= 0 && index < matches.length) {
+            return matches[index];
+        }
+        return null;
+    });
+
+    constructor() {
+        // Reset or adjust activeMatchIndex when search results change
+        effect(() => {
+            const matches = this.directMatches();
+            if (matches.length > 0) {
+                const current = this.activeMatchIndex();
+                if (current < 0 || current >= matches.length) {
+                    this.activeMatchIndex.set(0);
+                }
+            } else {
+                this.activeMatchIndex.set(-1);
+            }
+        });
+
+        // Scroll active match into view when it changes
+        effect(() => {
+            const path = this.activeMatchPath();
+            if (path && this.showSearch()) {
+                setTimeout(() => {
+                    const element = document.getElementById('node-' + path);
+                    if (element) {
+                        element.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }
+                }, 50);
+            }
+        });
+    }
+
+    nextMatch(): void {
+        const matches = this.directMatches();
+        if (matches.length === 0) return;
+        this.activeMatchIndex.update((idx) => (idx + 1) % matches.length);
+    }
+
+    prevMatch(): void {
+        const matches = this.directMatches();
+        if (matches.length === 0) return;
+        this.activeMatchIndex.update((idx) => (idx - 1 + matches.length) % matches.length);
+    }
 
     readonly hasData = computed(() => !!this.rootNode());
 
@@ -227,6 +294,15 @@ export class ViewerComponent {
         document.addEventListener('mouseup', onMouseUp);
         document.body.style.cursor = 'col-resize';
         document.body.style.userSelect = 'none';
+    }
+
+    onSearchEnter(event: Event): void {
+        const keyboardEvent = event as KeyboardEvent;
+        if (keyboardEvent.shiftKey) {
+            this.prevMatch();
+        } else {
+            this.nextMatch();
+        }
     }
 
     @HostListener('window:keydown', ['$event'])

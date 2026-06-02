@@ -122,4 +122,36 @@ describe('JsonTreeNodeComponent', () => {
             expect(fixture.componentInstance.expanded()).toBe(false);
         });
     });
+
+    describe('search expansion', () => {
+        it('should expand node if it lies on expandedPaths', () => {
+            const fixture = TestBed.createComponent(JsonTreeNodeComponent);
+            fixture.componentRef.setInput(
+                'node',
+                createNode({ type: 'object', value: {}, children: [], expanded: false, path: ['root', 'users', '1'] }),
+            );
+            fixture.componentRef.setInput('searchQuery', 'bob');
+            fixture.componentRef.setInput('expandedPaths', new Set(['root.users.1']));
+            fixture.detectChanges();
+            expect(fixture.componentInstance.expanded()).toBe(true);
+        });
+
+        it('should expand node if it lies on expandedPaths even if manually collapsed', () => {
+            const fixture = TestBed.createComponent(JsonTreeNodeComponent);
+            fixture.componentRef.setInput(
+                'node',
+                createNode({ type: 'object', value: {}, children: [], expanded: false, path: ['root', 'users', '1'] }),
+            );
+            fixture.componentRef.setInput('searchQuery', 'bob');
+            fixture.componentRef.setInput('expandedPaths', new Set(['root.users.1']));
+            fixture.detectChanges();
+            
+            // Manually collapse it
+            fixture.componentInstance.isExpanded.set(false);
+            fixture.detectChanges();
+            
+            // It should still be expanded due to the search match
+            expect(fixture.componentInstance.expanded()).toBe(true);
+        });
+    });
 });

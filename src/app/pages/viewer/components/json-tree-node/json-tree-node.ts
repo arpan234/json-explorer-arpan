@@ -26,10 +26,18 @@ import {
 })
 export class JsonTreeNodeComponent {
     readonly node = input.required<JsonNode>();
-    readonly searchMatches = input<Set<string>>(new Set());
     readonly depth = input(0);
     readonly expandAllTrigger = input(0);
     readonly collapseAllTrigger = input(0);
+
+    // Advanced search inputs
+    readonly searchQuery = input('');
+    readonly searchCaseSensitive = input(false);
+    readonly searchRegex = input(false);
+    readonly searchKeys = input(true);
+    readonly searchValues = input(true);
+    readonly expandedPaths = input<Set<string>>(new Set());
+    readonly activeMatchPath = input<string | null>(null);
 
     constructor() {
         effect(() => {
@@ -51,8 +59,17 @@ export class JsonTreeNodeComponent {
     readonly isExpanded = signal<boolean | null>(null);
 
     readonly expanded = computed(() => {
+        // Auto expand if there is an active search and this node lies on a matching path.
+        // This takes precedence over manual overrides so that matches are always visible.
+        const query = this.searchQuery();
+        if (query.trim() && this.expandedPaths().has(this.pathKey())) {
+            return true;
+        }
+
         const override = this.isExpanded();
-        return override !== null ? override : this.node().expanded;
+        if (override !== null) return override;
+
+        return this.node().expanded;
     });
 
     readonly isContainer = computed(() => {
@@ -62,8 +79,54 @@ export class JsonTreeNodeComponent {
 
     readonly pathKey = computed(() => this.node().path.join('.'));
 
-    readonly isMatch = computed(() => {
-        return this.searchMatches().has(this.pathKey());
+    readonly isDirectMatch = computed(() => {
+        const query = this.searchQuery();
+        if (!query.trim()) return false;
+
+        const isRegex = this.searchRegex();
+        const caseSensitive = this.searchCaseSensitive();
+        const searchKeys = this.searchKeys();
+        const searchValues = this.searchValues();
+        const node = this.node();
+
+        let regex: RegExp | null = null;
+        if (isRegex) {
+            try {
+                regex = new RegExp(query, caseSensitive ? '' : 'i');
+            } catch {
+                return false;
+            }
+        }
+
+        const queryLower = caseSensitive ? query : query.toLowerCase();
+
+        // 1. Check Key Match
+        if (searchKeys) {
+            const keyText = node.key;
+            if (regex) {
+                if (regex.test(keyText)) return true;
+            } else {
+                const source = caseSensitive ? keyText : keyText.toLowerCase();
+                if (source.includes(queryLower)) return true;
+            }
+        }
+
+        // 2. Check Value Match
+        if (searchValues && node.type !== 'object' && node.type !== 'array') {
+            const valText = String(node.value);
+            if (regex) {
+                if (regex.test(valText)) return true;
+            } else {
+                const source = caseSensitive ? valText : valText.toLowerCase();
+                if (source.includes(queryLower)) return true;
+            }
+        }
+
+        return false;
+    });
+
+    readonly isActiveMatch = computed(() => {
+        return this.activeMatchPath() === this.pathKey();
     });
 
     readonly valueColor = computed(() => TYPE_COLORS[this.node().type]);
@@ -76,6 +139,44 @@ export class JsonTreeNodeComponent {
         if (n.type === 'string') return `"${n.value}"`;
         if (n.type === 'null') return 'null';
         return String(n.value);
+    });
+
+    readonly keySegments = computed(() => {
+        const text = this.node().key;
+        const query = this.searchQuery();
+        if (!this.searchKeys() || !query.trim()) {
+            return [{ text, match: false }];
+        }
+        return getHighlightSegments(
+            text,
+            query,
+            this.searchCaseSensitive(),
+            this.searchRegex()
+        );
+    });
+
+    readonly valueSegments = computed(() => {
+        if (this.isContainer()) return [];
+        const n = this.node();
+        const query = this.searchQuery();
+        const caseSensitive = this.searchCaseSensitive();
+        const isRegex = this.searchRegex();
+
+        if (!this.searchValues() || !query.trim()) {
+            return [{ text: this.displayValue(), match: false }];
+        }
+
+        if (n.type === 'string') {
+            const rawVal = String(n.value);
+            const segments = getHighlightSegments(rawVal, query, caseSensitive, isRegex);
+            return [
+                { text: '"', match: false },
+                ...segments,
+                { text: '"', match: false }
+            ];
+        }
+
+        return getHighlightSegments(String(n.value), query, caseSensitive, isRegex);
     });
 
     readonly containerSummary = computed(() => {
@@ -133,5 +234,63 @@ export class JsonTreeNodeComponent {
 
     onChildPathSelected(path: string[]): void {
         this.pathSelected.emit(path);
+    }
+}
+
+function getHighlightSegments(
+    text: string,
+    query: string,
+    caseSensitive: boolean,
+    isRegex: boolean
+): { text: string; match: boolean }[] {
+    if (!query.trim() || !text) {
+        return [{ text, match: false }];
+    }
+
+    try {
+        let regex: RegExp;
+        if (isRegex) {
+            regex = new RegExp(query, caseSensitive ? 'g' : 'gi');
+        } else {
+            const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            regex = new RegExp(escaped, caseSensitive ? 'g' : 'gi');
+        }
+
+        const segments: { text: string; match: boolean }[] = [];
+        let lastIndex = 0;
+        let match: RegExpExecArray | null;
+
+        regex.lastIndex = 0;
+
+        while ((match = regex.exec(text)) !== null) {
+            if (match.index === regex.lastIndex) {
+                regex.lastIndex++;
+            }
+
+            if (match.index > lastIndex) {
+                segments.push({
+                    text: text.substring(lastIndex, match.index),
+                    match: false,
+                });
+            }
+
+            segments.push({
+                text: match[0],
+                match: true,
+            });
+
+            lastIndex = regex.lastIndex;
+        }
+
+        if (lastIndex < text.length) {
+            segments.push({
+                text: text.substring(lastIndex),
+                match: false,
+            });
+        }
+
+        return segments;
+    } catch {
+        return [{ text, match: false }];
     }
 }
