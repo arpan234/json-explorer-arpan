@@ -126,3 +126,105 @@ body {
 * {
     box-sizing: border-box;
 }
+
+// Global SEO Welcome & FAQ Section Styles
+.welcome-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow-y: auto;
+    padding: 24px;
+    box-sizing: border-box;
+    align-items: center;
+    width: 100%;
+}
+
+.seo-section {
+    max-width: 680px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    padding-bottom: 40px;
+    border-top: 1px solid var(--app-glass-border, var(--mat-sys-outline-variant));
+    padding-top: 32px;
+}
+
+.seo-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--app-glass-border, var(--mat-sys-outline-variant));
+    padding: 20px;
+    border-radius: 12px;
+    
+    h3 {
+        margin: 0 0 10px 0;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--mat-sys-primary);
+    }
+    
+    p {
+        margin: 0;
+        font-size: 0.9rem;
+        line-height: 1.6;
+        color: var(--mat-sys-on-surface-variant);
+    }
+}
+
+.faq-container {
+    h3 {
+        margin: 0 0 16px 0;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--mat-sys-primary);
+    }
+}
+
+.faq-item {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--app-glass-border, var(--mat-sys-outline-variant));
+    border-radius: 8px;
+    margin-bottom: 12px;
+    transition: all 0.25s ease;
+    overflow: hidden;
+    width: 100%;
+    box-sizing: border-box;
+    
+    &[open] {
+        background: rgba(255, 255, 255, 0.04);
+        box-shadow: var(--app-neon-glow);
+        border-color: rgba(0, 240, 255, 0.25);
+        
+        summary {
+            border-bottom: 1px solid var(--app-glass-border, var(--mat-sys-outline-variant));
+            color: var(--mat-sys-primary);
+        }
+    }
+    
+    summary {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 0.92rem;
+        font-weight: 600;
+        padding: 14px 18px;
+        cursor: pointer;
+        outline: none;
+        user-select: none;
+        color: var(--mat-sys-on-surface);
+        transition: color 0.2s ease;
+        display: list-item;
+        
+        &:hover {
+            color: var(--mat-sys-primary);
+        }
+    }
+    
+    p {
+        margin: 0;
+        padding: 16px 18px;
+        font-size: 0.88rem;
+        line-height: 1.55;
+        color: var(--mat-sys-on-surface-variant);
+    }
+}

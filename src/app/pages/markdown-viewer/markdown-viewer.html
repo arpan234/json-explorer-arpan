@@ -12,10 +12,38 @@
         @if (markdownContent()) {
             <app-markdown-preview [content]="markdownContent()" />
         } @else {
-            <div class="empty-state">
-                <mat-icon class="empty-icon">description</mat-icon>
-                <h2>No Markdown loaded</h2>
-                <p>Paste Markdown in the input panel or upload a .md file to get started.</p>
+            <div class="welcome-container">
+                <div class="empty-state">
+                    <mat-icon class="empty-icon">description</mat-icon>
+                    <h2>No Markdown loaded</h2>
+                    <p>Paste Markdown in the input panel or upload a .md file to get started.</p>
+                </div>
+
+                <div class="seo-section">
+                    <div class="seo-card">
+                        <h3>About json-md-formatter Markdown Tool</h3>
+                        <p>Our online Markdown tool helps you read, preview, and format Markdown files in real-time. Whether you are working on a README.md file, formatting tables, or writing software documentation, our split-pane viewer lets you edit raw markdown and see formatted HTML rendering instantly.</p>
+                    </div>
+
+                    <div class="faq-container">
+                        <h3>Frequently Asked Questions (FAQ)</h3>
+
+                        <details class="faq-item">
+                            <summary>How to use the Markdown Viewer?</summary>
+                            <p>Type or paste your raw Markdown text in the left panel. The right preview panel will automatically compile and display the formatted output in real-time, including headers, tables, links, code snippets, and lists.</p>
+                        </details>
+
+                        <details class="faq-item">
+                            <summary>Does this support conversion to HTML or JSON?</summary>
+                            <p>Yes. The preview engine parses standard Markdown syntax into clean HTML. Combined with our companion JSON formatter tool, you can easily manage, convert, and represent structured datasets between JSON, Markdown tables, and raw code views.</p>
+                        </details>
+
+                        <details class="faq-item">
+                            <summary>Is my data stored on any server?</summary>
+                            <p><strong>No.</strong> Your privacy is fully preserved. Just like our JSON tools, all markdown parsing and compilation are performed locally inside your web browser. No data is sent or saved on external servers.</p>
+                        </details>
+                    </div>
+                </div>
             </div>
         }
     </div>

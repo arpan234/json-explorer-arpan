@@ -205,10 +205,38 @@
                 </mat-tab>
             </mat-tab-group>
         } @else {
-            <div class="empty-state">
-                <mat-icon class="empty-icon">data_object</mat-icon>
-                <h2>No JSON loaded</h2>
-                <p>Paste JSON in the input panel or upload a .json file to get started.</p>
+            <div class="welcome-container">
+                <div class="empty-state">
+                    <mat-icon class="empty-icon">data_object</mat-icon>
+                    <h2>No JSON loaded</h2>
+                    <p>Paste JSON in the input panel or upload a .json file to get started.</p>
+                </div>
+
+                <div class="seo-section">
+                    <div class="seo-card">
+                        <h3>About json-md-formatter</h3>
+                        <p>Welcome to <strong>json-md-formatter</strong>, an interactive online suite for formatting, validating, and exploring JSON, as well as converting JSON structures into clean Markdown tables and code blocks. Built with speed and security in mind, this tool runs entirely inside your browser—meaning none of your data is sent to any server.</p>
+                    </div>
+
+                    <div class="faq-container">
+                        <h3>Frequently Asked Questions (FAQ)</h3>
+
+                        <details class="faq-item">
+                            <summary>How to convert JSON to Markdown?</summary>
+                            <p>To convert JSON data to Markdown, paste your JSON code into the left editor panel. Select the <strong>Table</strong> tab to view your JSON formatted as a tabular dataset, and use the export tools to generate markdown formatting instantly. Or, use the <strong>Code Gen</strong> tab to auto-generate markdown code blocks and programming code representations.</p>
+                        </details>
+
+                        <details class="faq-item">
+                            <summary>Why format JSON?</summary>
+                            <p>JSON (JavaScript Object Notation) is often minified or compressed to save bandwidth during transmission. Formatting makes JSON data human-readable by adjusting indentation, spacing, and bracket alignment, which helps developers inspect, debug, and troubleshoot API payloads easily.</p>
+                        </details>
+
+                        <details class="faq-item">
+                            <summary>Is my JSON data secure?</summary>
+                            <p><strong>Yes, absolutely.</strong> Your privacy is our priority. All formatting, validation, parsing, and rendering are processed entirely client-side using JavaScript in your local browser session. None of your input data is uploaded, sent, or processed by any external server.</p>
+                        </details>
+                    </div>
+                </div>
             </div>
         }
 
