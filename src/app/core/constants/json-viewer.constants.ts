@@ -11,11 +11,11 @@ export const TYPE_COLORS: Record<JsonValueType, string> = {
 
 export const ROOT_KEY_COLOR = 'var(--mat-sys-primary, #00f0ff)';
 export const NESTED_KEY_COLORS = [
-    '#ff79c6', // Neon Pink
-    '#50fa7b', // Neon Green
-    '#ffb86c', // Neon Orange
-    '#bd93f9', // Neon Purple
-    '#ff5555', // Neon Red
+    'var(--key-color-pink, #ff79c6)',
+    'var(--key-color-green, #50fa7b)',
+    'var(--key-color-orange, #ffb86c)',
+    'var(--key-color-purple, #bd93f9)',
+    'var(--key-color-red, #ff5555)',
 ];
 
 export const getKeyColorByDepth = (depth: number): string => {
