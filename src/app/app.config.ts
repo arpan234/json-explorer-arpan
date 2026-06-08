@@ -5,6 +5,7 @@ import { provideMonacoEditor } from 'ngx-monaco-editor-v2';
 import { provideMarkdown } from 'ngx-markdown';
 
 import { routes } from './app.routes';
+import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 
 export const appConfig: ApplicationConfig = {
     providers: [
@@ -13,5 +14,6 @@ export const appConfig: ApplicationConfig = {
         provideAnimationsAsync(),
         provideMonacoEditor(),
         provideMarkdown(),
+        provideClientHydration(withEventReplay()),
     ],
 };

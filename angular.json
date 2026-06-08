@@ -34,7 +34,15 @@
                                 "output": "/assets/monaco/min/vs"
                             }
                         ],
-                        "styles": ["src/styles.scss"]
+                        "styles": ["src/styles.scss"],
+                        "server": "src/main.server.ts",
+                        "outputMode": "server",
+                        "security": {
+                            "allowedHosts": []
+                        },
+                        "ssr": {
+                            "entry": "src/server.ts"
+                        }
                     },
                     "configurations": {
                         "production": {
