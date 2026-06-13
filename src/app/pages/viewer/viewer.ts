@@ -7,6 +7,7 @@ import {
     HostListener,
     effect,
 } from '@angular/core';
+import { BreakpointObserver } from '@angular/cdk/layout';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -55,6 +56,7 @@ export class ViewerComponent {
     private readonly parserService = inject(JsonParserService);
     private readonly searchService = inject(JsonSearchService);
     private readonly snackBar = inject(MatSnackBar);
+    private readonly breakpointObserver = inject(BreakpointObserver);
 
     readonly rawJson = signal('');
     readonly viewMode = signal<ViewMode>('tree');
@@ -64,6 +66,10 @@ export class ViewerComponent {
     readonly panelWidth = signal(35);
     readonly expandAllTrigger = signal(0);
     readonly collapseAllTrigger = signal(0);
+
+    // Mobile responsive state
+    readonly isMobile = signal(false);
+    readonly activeMobileTab = signal<'input' | 'output'>('input');
 
     // Advanced search options
     readonly searchCaseSensitive = signal(false);
@@ -132,6 +138,11 @@ export class ViewerComponent {
                     }
                 }, 50);
             }
+        });
+
+        // Set up mobile breakpoint observation
+        this.breakpointObserver.observe('(max-width: 768px)').subscribe((result) => {
+            this.isMobile.set(result.matches);
         });
     }
 
@@ -204,6 +215,9 @@ export class ViewerComponent {
         this.rawJson.set(raw);
         if (!this.hasData()) return;
         this.viewMode.set('tree');
+        if (this.isMobile()) {
+            this.activeMobileTab.set('output');
+        }
     }
 
     onRawEditorChange(raw: string): void {

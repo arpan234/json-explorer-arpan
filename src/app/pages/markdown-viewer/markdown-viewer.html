@@ -1,14 +1,42 @@
-<div class="viewer-container">
+<div class="viewer-container" [class.mobile-view]="isMobile()">
+    @if (isMobile()) {
+        <div class="mobile-nav-bar">
+            <button
+                mat-button
+                class="mobile-nav-btn"
+                [class.active]="activeMobileTab() === 'input'"
+                (click)="activeMobileTab.set('input')"
+            >
+                <mat-icon>edit</mat-icon>
+                Input
+            </button>
+            <button
+                mat-button
+                class="mobile-nav-btn"
+                [class.active]="activeMobileTab() === 'output'"
+                (click)="activeMobileTab.set('output')"
+            >
+                <mat-icon>visibility</mat-icon>
+                Preview
+            </button>
+        </div>
+    }
+
     <!-- Left Panel: Input -->
-    <div class="input-panel" [style.width.%]="panelWidth()">
-        <app-markdown-input (markdownParsed)="onMarkdownInput($event)" />
-    </div>
+    @if (!isMobile() || activeMobileTab() === 'input') {
+        <div class="input-panel" [style.width.%]="isMobile() ? 100 : panelWidth()">
+            <app-markdown-input (markdownParsed)="onMarkdownInput($event)" />
+        </div>
+    }
 
     <!-- Resize Handle -->
-    <div class="resize-handle" (mousedown)="onResizeStart($event)"></div>
+    @if (!isMobile()) {
+        <div class="resize-handle" (mousedown)="onResizeStart($event)"></div>
+    }
 
     <!-- Right Panel: Preview -->
-    <div class="output-panel">
+    @if (!isMobile() || activeMobileTab() === 'output') {
+        <div class="output-panel">
         @if (markdownContent()) {
             <app-markdown-preview [content]="markdownContent()" />
         } @else {
@@ -46,5 +74,6 @@
                 </div>
             </div>
         }
-    </div>
+        </div>
+    }
 </div>

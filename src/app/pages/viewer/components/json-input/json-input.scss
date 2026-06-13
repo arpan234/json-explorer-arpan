@@ -150,3 +150,17 @@
         transform: translateY(-8px);
     }
 }
+
+@media (max-width: 480px) {
+    .input-footer {
+        padding: 8px 12px;
+        gap: 6px;
+
+        button {
+            flex: 1;
+            font-size: 0.75rem;
+            padding: 0 8px !important;
+            min-width: 0 !important;
+        }
+    }
+}

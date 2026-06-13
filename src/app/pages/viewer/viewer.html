@@ -1,14 +1,42 @@
-<div class="viewer-container">
+<div class="viewer-container" [class.mobile-view]="isMobile()">
+    @if (isMobile()) {
+        <div class="mobile-nav-bar">
+            <button
+                mat-button
+                class="mobile-nav-btn"
+                [class.active]="activeMobileTab() === 'input'"
+                (click)="activeMobileTab.set('input')"
+            >
+                <mat-icon>edit</mat-icon>
+                Input
+            </button>
+            <button
+                mat-button
+                class="mobile-nav-btn"
+                [class.active]="activeMobileTab() === 'output'"
+                (click)="activeMobileTab.set('output')"
+            >
+                <mat-icon>visibility</mat-icon>
+                {{ hasData() ? 'Viewer' : 'Welcome' }}
+            </button>
+        </div>
+    }
+
     <!-- Left Panel: Input -->
-    <div class="input-panel" [style.width.%]="panelWidth()">
-        <app-json-input (jsonParsed)="onJsonInput($event)" />
-    </div>
+    @if (!isMobile() || activeMobileTab() === 'input') {
+        <div class="input-panel" [style.width.%]="isMobile() ? 100 : panelWidth()">
+            <app-json-input (jsonParsed)="onJsonInput($event)" />
+        </div>
+    }
 
     <!-- Resize Handle -->
-    <div class="resize-handle" (mousedown)="onResizeStart($event)"></div>
+    @if (!isMobile()) {
+        <div class="resize-handle" (mousedown)="onResizeStart($event)"></div>
+    }
 
     <!-- Right Panel: Output -->
-    <div class="output-panel">
+    @if (!isMobile() || activeMobileTab() === 'output') {
+        <div class="output-panel">
         @if (hasData()) {
             <!-- Action Bar -->
             <div class="action-bar">
@@ -246,5 +274,6 @@
                 <span>{{ error }}</span>
             </div>
         }
-    </div>
+        </div>
+    }
 </div>

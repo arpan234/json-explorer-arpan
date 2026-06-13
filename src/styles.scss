@@ -242,3 +242,36 @@ body {
         color: var(--mat-sys-on-surface-variant);
     }
 }
+
+@media (max-width: 600px) {
+    .welcome-container {
+        padding: 16px;
+    }
+    
+    .seo-section {
+        padding-top: 20px;
+        gap: 16px;
+    }
+    
+    .seo-card {
+        padding: 16px;
+        h3 {
+            font-size: 1rem;
+        }
+        p {
+            font-size: 0.85rem;
+        }
+    }
+    
+    .faq-item {
+        summary {
+            padding: 12px 14px;
+            font-size: 0.85rem;
+        }
+        p {
+            padding: 12px 14px;
+            font-size: 0.82rem;
+        }
+    }
+}
+
