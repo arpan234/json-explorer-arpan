@@ -30,7 +30,7 @@ export class ToolbarComponent {
     readonly isDark = signal(false);
 
     readonly navLinks = [
-        { path: '/json', label: 'JSON Viewer', icon: 'data_object' },
+        { path: '/', label: 'JSON Viewer', icon: 'data_object' },
         { path: '/markdown', label: 'Markdown Reader', icon: 'description' },
     ];
 

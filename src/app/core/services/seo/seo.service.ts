@@ -23,7 +23,7 @@ export class SeoService {
         // Remove query parameters or fragments if any
         const path = url.split('?')[0].split('#')[0];
         // Don't append extra slash for root, keep canonical clean
-        const cleanPath = path === '/' || path === '' ? '/json' : path;
+        const cleanPath = path === '/' || path === '' ? '' : path;
         const canonicalUrl = `${this.baseUrl}${cleanPath}`;
 
         let link: HTMLLinkElement | null = this.document.querySelector("link[rel='canonical']");
