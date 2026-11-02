@@ -14,7 +14,7 @@ interface Schema {
 @Injectable({ providedIn: 'root' })
 export class CodeGeneratorService {
     /**
-     * Estimates LLM token counts (using standard BPE ~3.5-4 chars/punctuation heuristic)
+     * Estimates LLM token counts with a rough text-pattern heuristic, not a model tokenizer
      * and calculates token reduction percentage when converting JSON to Markdown.
      */
     calculateTokenSavings(
@@ -91,7 +91,9 @@ export class CodeGeneratorService {
             );
             if (allObjects) {
                 const table = renderObjectArrayTable(value as Record<string, unknown>[]);
-                return level === 1 ? `# ${title}\n\n${table}` : `${headingPrefix} ${title}\n\n${table}`;
+                return level === 1
+                    ? `# ${title}\n\n${table}`
+                    : `${headingPrefix} ${title}\n\n${table}`;
             }
             const list = value
                 .map((item) =>
@@ -105,12 +107,8 @@ export class CodeGeneratorService {
 
         if (typeof value === 'object' && value !== null) {
             const entries = Object.entries(value as Record<string, unknown>);
-            const primitives = entries.filter(
-                ([_, v]) => typeof v !== 'object' || v === null,
-            );
-            const complexes = entries.filter(
-                ([_, v]) => typeof v === 'object' && v !== null,
-            );
+            const primitives = entries.filter(([_, v]) => typeof v !== 'object' || v === null);
+            const complexes = entries.filter(([_, v]) => typeof v === 'object' && v !== null);
 
             const sections: string[] = [];
             if (level === 1) {
@@ -123,9 +121,7 @@ export class CodeGeneratorService {
                 const propRows = primitives.map(
                     ([k, v]) => `| **${escapeCell(k)}** | ${escapeCell(v)} |`,
                 );
-                sections.push(
-                    ['| Property | Value |', '| --- | --- |', ...propRows].join('\n'),
-                );
+                sections.push(['| Property | Value |', '| --- | --- |', ...propRows].join('\n'));
             }
 
             for (const [k, v] of complexes) {
@@ -237,13 +233,15 @@ export class CodeGeneratorService {
 
         const build = (s: Schema, name: string): string => {
             if (s.type === 'object' && s.properties) {
-                const interfaceName = this.capitalize(name);
+                const interfaceName = this.identifier(name);
                 if (generatedNames.has(interfaceName)) return interfaceName;
                 generatedNames.add(interfaceName);
 
                 const fields = Object.entries(s.properties)
                     .map(([k, propSchema]) => {
-                        const cleanKey = /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(k) ? k : `"${k}"`;
+                        const cleanKey = /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(k)
+                            ? k
+                            : JSON.stringify(k);
                         const optionalMarker = propSchema.optional ? '?' : '';
                         const typeName = build(propSchema, name + this.capitalize(k));
                         return `    ${cleanKey}${optionalMarker}: ${typeName};`;
@@ -255,7 +253,10 @@ export class CodeGeneratorService {
             }
 
             if (s.type === 'array' && s.itemSchema) {
-                const itemType = build(s.itemSchema, this.singularize(name));
+                const itemType = build(
+                    s.itemSchema,
+                    name === rootName ? name + 'Item' : this.singularize(name),
+                );
                 return `${itemType}[]`;
             }
 
@@ -265,7 +266,7 @@ export class CodeGeneratorService {
         const rootType = build(schema, rootName);
 
         if (schema.type !== 'object') {
-            return `export type ${rootName} = ${rootType};`;
+            return [...declarations, `export type ${rootName} = ${rootType};`].join('\n\n');
         }
 
         return declarations.reverse().join('\n\n');
@@ -297,16 +298,22 @@ export class CodeGeneratorService {
 
         const build = (s: Schema, name: string): string => {
             if (s.type === 'object' && s.properties) {
-                const structName = this.capitalize(name);
+                const structName = this.identifier(name);
                 if (generatedNames.has(structName)) return structName;
                 generatedNames.add(structName);
 
                 const fields = Object.entries(s.properties)
                     .map(([k, propSchema]) => {
-                        const goFieldName = this.capitalize(k.replace(/[^a-zA-Z0-9]/g, ''));
+                        const goFieldName =
+                            this.identifier(k) +
+                            (Object.keys(s.properties!).filter(
+                                (key) => this.identifier(key) === this.identifier(k),
+                            ).length > 1
+                                ? '_' + Object.keys(s.properties!).indexOf(k)
+                                : '');
                         const typeName = build(propSchema, name + this.capitalize(k));
                         const pointerMarker = propSchema.optional ? '*' : '';
-                        return `    ${goFieldName} ${pointerMarker}${typeName} \`json:"${k}"\``;
+                        return `    ${goFieldName} ${pointerMarker}${typeName} ${JSON.stringify('json:' + JSON.stringify(k))}`;
                     })
                     .join('\n');
 
@@ -315,7 +322,10 @@ export class CodeGeneratorService {
             }
 
             if (s.type === 'array' && s.itemSchema) {
-                const itemType = build(s.itemSchema, this.singularize(name));
+                const itemType = build(
+                    s.itemSchema,
+                    name === rootName ? name + 'Item' : this.singularize(name),
+                );
                 return `[]${itemType}`;
             }
 
@@ -325,7 +335,9 @@ export class CodeGeneratorService {
         const rootType = build(schema, rootName);
 
         if (schema.type !== 'object') {
-            return `type ${rootName} ${rootType}`;
+            return (
+                'package main\n\n' + [...declarations, `type ${rootName} ${rootType}`].join('\n\n')
+            );
         }
 
         return `package main\n\n` + declarations.reverse().join('\n\n');
@@ -354,16 +366,31 @@ export class CodeGeneratorService {
         const generatedNames = new Set<string>();
         let usesList = false;
         let usesOptional = false;
+        let usesField = false;
+        const pythonKeywords = new Set(
+            'False None True and as assert async await break class continue def del elif else except finally for from global if import in is lambda nonlocal not or pass raise return try while with yield match case'.split(
+                ' ',
+            ),
+        );
 
         const build = (s: Schema, name: string): string => {
             if (s.type === 'object' && s.properties) {
-                const className = this.capitalize(name);
+                const className = this.identifier(name);
                 if (generatedNames.has(className)) return className;
                 generatedNames.add(className);
 
                 const fields = Object.entries(s.properties)
                     .map(([k, propSchema]) => {
-                        const pyFieldName = /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(k) ? k : `_${k}`;
+                        const index = Object.keys(s.properties!).indexOf(k);
+                        const needsAlias =
+                            !/^[a-zA-Z][a-zA-Z0-9_]*$/.test(k) ||
+                            pythonKeywords.has(k) ||
+                            k.startsWith('model_') ||
+                            ['schema', 'json', 'dict', 'copy', 'validate', 'construct'].includes(k);
+                        let pyFieldName = needsAlias ? `field_${index}` : k;
+                        if (needsAlias)
+                            while (Object.hasOwn(s.properties!, pyFieldName)) pyFieldName += '_';
+                        if (needsAlias) usesField = true;
                         let typeName = build(propSchema, name + this.capitalize(k));
 
                         if (propSchema.optional) {
@@ -371,6 +398,11 @@ export class CodeGeneratorService {
                             typeName = `Optional[${typeName}] = None`;
                         }
 
+                        if (needsAlias) {
+                            const optional = propSchema.optional;
+                            typeName = typeName.replace(' = None', '');
+                            return `    ${pyFieldName}: ${typeName} = Field(${optional ? 'default=None, ' : ''}alias=${JSON.stringify(k)})`;
+                        }
                         return `    ${pyFieldName}: ${typeName}`;
                     })
                     .join('\n');
@@ -381,7 +413,10 @@ export class CodeGeneratorService {
 
             if (s.type === 'array' && s.itemSchema) {
                 usesList = true;
-                const itemType = build(s.itemSchema, this.singularize(name));
+                const itemType = build(
+                    s.itemSchema,
+                    name === rootName ? name + 'Item' : this.singularize(name),
+                );
                 return `List[${itemType}]`;
             }
 
@@ -390,9 +425,19 @@ export class CodeGeneratorService {
 
         const rootType = build(schema, rootName);
 
-        const imports = ['from pydantic import BaseModel'];
-        if (usesList || usesOptional) {
+        const imports = [
+            'from __future__ import annotations',
+            `from pydantic import BaseModel${usesField ? ', Field' : ''}`,
+        ];
+        if (
+            usesList ||
+            usesOptional ||
+            declarations.join().includes(': Any') ||
+            rootType.includes('Any')
+        ) {
             const typingImports: string[] = [];
+            if (declarations.join().includes('Any') || rootType.includes('Any'))
+                typingImports.push('Any');
             if (usesList) typingImports.push('List');
             if (usesOptional) typingImports.push('Optional');
             imports.push(`from typing import ${typingImports.join(', ')}`);
@@ -401,10 +446,10 @@ export class CodeGeneratorService {
         const importsBlock = imports.join('\n');
 
         if (schema.type !== 'object') {
-            return `${importsBlock}\n\n${rootName} = ${rootType}`;
+            return `${importsBlock}\n\n${declarations.join('\n\n')}\n\n${rootName} = ${rootType}`;
         }
 
-        return `${importsBlock}\n\n` + declarations.reverse().join('\n\n');
+        return `${importsBlock}\n\n` + declarations.join('\n\n');
     }
 
     private mapTypePython(type: SchemaType): string {
@@ -418,7 +463,7 @@ export class CodeGeneratorService {
             case 'boolean':
                 return 'bool';
             default:
-                return 'any';
+                return 'Any';
         }
     }
 
@@ -426,131 +471,90 @@ export class CodeGeneratorService {
     // SQL Table & Insert Generator
     // ==========================================
     private toSQL(value: unknown, tableName: string): string {
-        const createTables: string[] = [];
-        const inserts: string[] = [];
-
-        const sanitizeName = (name: string) => name.toLowerCase().replace(/[^a-z0-9_]/g, '_');
-
-        const process = (val: unknown, name: string, parentIdCol?: string, parentIdVal?: number): void => {
-            const cleanTableName = sanitizeName(name);
-
-            if (Array.isArray(val)) {
-                if (val.length === 0) return;
-
-                // If it is an array of primitives, we can make a table: id (SERIAL), val_id (FK), value
-                if (typeof val[0] !== 'object' || val[0] === null) {
-                    const create = `CREATE TABLE ${cleanTableName} (\n` +
-                        `    id SERIAL PRIMARY KEY,\n` +
-                        `    ${parentIdCol || 'parent_id'} INT,\n` +
-                        `    value VARCHAR(255)\n` +
-                        `);`;
-                    createTables.push(create);
-
-                    val.forEach((item) => {
-                        const sqlVal = typeof item === 'string' ? `'${item.replace(/'/g, "''")}'` : String(item);
-                        inserts.push(`INSERT INTO ${cleanTableName} (${parentIdCol || 'parent_id'}, value) VALUES (${parentIdVal || 1}, ${sqlVal});`);
-                    });
-                    return;
-                }
-
-                // If it is an array of objects
-                const sample = val[0] as Record<string, unknown>;
-                const fields = Object.entries(sample)
-                    .filter(([_, v]) => typeof v !== 'object' || v === null)
-                    .map(([k, v]) => `    ${sanitizeName(k)} ${this.mapTypeSQL(v)}`)
-                    .join(',\n');
-
-                const fkField = parentIdCol ? `,\n    ${parentIdCol} INT` : '';
-
-                const create = `CREATE TABLE ${cleanTableName} (\n` +
-                    `    id SERIAL PRIMARY KEY${fkField},\n` +
-                    `${fields}\n` +
-                    `);`;
-                createTables.push(create);
-
-                val.forEach((item, index) => {
-                    const rowId = index + 1;
-                    const itemObj = item as Record<string, unknown>;
-                    const columns = Object.entries(itemObj)
-                        .filter(([_, v]) => typeof v !== 'object' || v === null)
-                        .map(([k]) => sanitizeName(k));
-
-                    if (parentIdCol) columns.unshift(parentIdCol);
-                    columns.unshift('id');
-
-                    const values = Object.entries(itemObj)
-                        .filter(([_, v]) => typeof v !== 'object' || v === null)
-                        .map(([_, v]) => {
-                            if (v === null) return 'NULL';
-                            if (typeof v === 'string') return `'${v.replace(/'/g, "''")}'`;
-                            return String(v);
-                        });
-
-                    if (parentIdCol) values.unshift(String(parentIdVal || 1));
-                    values.unshift(String(rowId));
-
-                    inserts.push(`INSERT INTO ${cleanTableName} (${columns.join(', ')}) VALUES (${values.join(', ')});`);
-
-                    // Process nested arrays/objects in this row
-                    Object.entries(itemObj)
-                        .filter(([_, v]) => typeof v === 'object' && v !== null)
-                        .forEach(([k, v]) => {
-                            process(v, `${cleanTableName}_${k}`, `${cleanTableName}_id`, rowId);
-                        });
-                });
-
-                return;
+        // Collect rows first so every table is declared once with all observed columns.
+        type Table = { rows: Record<string, unknown>[]; id: string; parent?: string };
+        const tables = new Map<string, Table>();
+        const rowIds = new WeakMap<object, number>();
+        const parentIds = new WeakMap<object, number | undefined>();
+        const quote = (name: string) => '"' + name.replace(/"/g, '""') + '"';
+        const literal = (value: unknown): string => {
+            if (value === null || value === undefined) return 'NULL';
+            if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+            return "'" + String(value).replace(/'/g, "''") + "'";
+        };
+        const collect = (data: unknown, name: string, parentId?: number): void => {
+            const items = Array.isArray(data) ? data : [data];
+            let table = tables.get(name);
+            if (!table) {
+                table = { rows: [], id: '', parent: parentId === undefined ? undefined : '' };
+                tables.set(name, table);
             }
-
-            if (typeof val === 'object' && val !== null) {
-                const obj = val as Record<string, unknown>;
-                const fields = Object.entries(obj)
-                    .filter(([_, v]) => typeof v !== 'object' || v === null)
-                    .map(([k, v]) => `    ${sanitizeName(k)} ${this.mapTypeSQL(v)}`)
-                    .join(',\n');
-
-                const fkField = parentIdCol ? `,\n    ${parentIdCol} INT` : '';
-
-                const create = `CREATE TABLE ${cleanTableName} (\n` +
-                    `    id SERIAL PRIMARY KEY${fkField},\n` +
-                    `${fields}\n` +
-                    `);`;
-                createTables.push(create);
-
-                const rowId = 1;
-                const columns = Object.entries(obj)
-                    .filter(([_, v]) => typeof v !== 'object' || v === null)
-                    .map(([k]) => sanitizeName(k));
-                if (parentIdCol) columns.unshift(parentIdCol);
-                columns.unshift('id');
-
-                const values = Object.entries(obj)
-                    .filter(([_, v]) => typeof v !== 'object' || v === null)
-                    .map(([_, v]) => {
-                        if (v === null) return 'NULL';
-                        if (typeof v === 'string') return `'${v.replace(/'/g, "''")}'`;
-                        return String(v);
-                    });
-                if (parentIdCol) values.unshift(String(parentIdVal || 1));
-                values.unshift(String(rowId));
-
-                inserts.push(`INSERT INTO ${cleanTableName} (${columns.join(', ')}) VALUES (${values.join(', ')});`);
-
-                // Process nested arrays/objects
-                Object.entries(obj)
-                    .filter(([_, v]) => typeof v === 'object' && v !== null)
-                    .forEach(([k, v]) => {
-                        process(v, `${cleanTableName}_${k}`, `${cleanTableName}_id`, rowId);
-                    });
+            for (const item of items) {
+                const object =
+                    item !== null && typeof item === 'object' && !Array.isArray(item)
+                        ? (item as Record<string, unknown>)
+                        : { value: item };
+                const row: Record<string, unknown> = {};
+                const rowId = table.rows.length + 1;
+                // Synthetic identifiers are assigned after all user columns have been observed.
+                rowIds.set(row, rowId);
+                parentIds.set(row, parentId);
+                for (const [key, val] of Object.entries(object)) {
+                    if (val !== null && typeof val === 'object')
+                        collect(val, name + '__' + key.length + '_' + key, rowId);
+                    else Object.defineProperty(row, key, { value: val, enumerable: true });
+                }
+                table.rows.push(row);
             }
         };
-
-        process(value, tableName);
-
-        return `-- Tables Definitions\n` +
-            createTables.join('\n\n') +
-            `\n\n-- Inserts Statements\n` +
-            inserts.join('\n');
+        collect(value, tableName);
+        const definitions: string[] = [];
+        const inserts: string[] = [];
+        for (const [name, table] of tables) {
+            const columns = [...new Set(table.rows.flatMap((row) => Object.keys(row)))];
+            const unique = (base: string) => {
+                let key = base;
+                while (columns.includes(key)) key += '_';
+                columns.push(key);
+                return key;
+            };
+            table.id = unique('_row_id');
+            const parent = table.parent === undefined ? undefined : unique('_parent_row_id');
+            const fields = columns.map((key) => {
+                if (key === table.id) return `    ${quote(key)} SERIAL PRIMARY KEY`;
+                if (key === parent) return `    ${quote(key)} INT`;
+                const values = table.rows
+                    .map((row) => row[key])
+                    .filter((v) => v !== null && v !== undefined);
+                const types = new Set(values.map((v) => typeof v));
+                const type =
+                    types.size === 1 && types.has('number')
+                        ? 'NUMERIC'
+                        : types.size === 1 && types.has('boolean')
+                          ? 'BOOLEAN'
+                          : 'TEXT';
+                return `    ${quote(key)} ${type}`;
+            });
+            definitions.push(`CREATE TABLE ${quote(name)} (\n${fields.join(',\n')}\n);`);
+            for (const row of table.rows) {
+                const vals = columns.map((key) =>
+                    key === table.id
+                        ? rowIds.get(row)
+                        : key === parent
+                          ? parentIds.get(row)
+                          : row[key],
+                );
+                inserts.push(
+                    `INSERT INTO ${quote(name)} (${columns.map(quote).join(', ')}) VALUES (${vals.map(literal).join(', ')});`,
+                );
+            }
+        }
+        return (
+            '-- PostgreSQL draft: review types and relationships before executing.\n-- Tables Definitions\n' +
+            definitions.join('\n\n') +
+            '\n\n-- Inserts Statements\n' +
+            inserts.join('\n')
+        );
     }
 
     private mapTypeSQL(v: unknown): string {
@@ -565,6 +569,11 @@ export class CodeGeneratorService {
     // ==========================================
     // Helper Text Utilities
     // ==========================================
+    private identifier(str: string): string {
+        const cleaned = str.replace(/[^a-zA-Z0-9_]/g, '_');
+        return /^[a-zA-Z]/.test(cleaned) ? this.capitalize(cleaned) : 'Field_' + cleaned;
+    }
+
     private capitalize(str: string): string {
         if (!str) return '';
         return str.charAt(0).toUpperCase() + str.slice(1);
@@ -572,7 +581,8 @@ export class CodeGeneratorService {
 
     private singularize(str: string): string {
         if (str.endsWith('ies')) return str.slice(0, -3) + 'y';
-        if (str.endsWith('es') && !str.endsWith('ces') && !str.endsWith('ses')) return str.slice(0, -2);
+        if (str.endsWith('es') && !str.endsWith('ces') && !str.endsWith('ses'))
+            return str.slice(0, -2);
         if (str.endsWith('s') && !str.endsWith('ss')) return str.slice(0, -1);
         return str;
     }

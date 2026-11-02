@@ -38,7 +38,7 @@ export class JsonInputComponent {
     constructor() {
         effect(() => {
             const ext = this.externalJson();
-            if (ext && ext !== this.inputText()) {
+            if (ext !== this.inputText()) {
                 this.inputText.set(ext);
                 this.error.set(null);
             }
@@ -48,14 +48,9 @@ export class JsonInputComponent {
     onTextChange(value: string): void {
         this.inputText.set(value);
         const trimmed = value.trim();
-        if (!trimmed) {
-            this.error.set(null);
-            return;
-        }
-        if (this.parserService.validate(trimmed).valid) {
-            this.error.set(null);
-            this.jsonParsed.emit(trimmed);
-        }
+        const result = trimmed ? this.parserService.validate(trimmed) : { valid: true };
+        this.error.set(result.valid ? null : (result.error ?? 'Invalid JSON'));
+        this.jsonParsed.emit(value);
     }
 
     onPaste(event: ClipboardEvent): void {
@@ -149,6 +144,7 @@ export class JsonInputComponent {
     onClear(): void {
         this.inputText.set('');
         this.error.set(null);
+        this.jsonParsed.emit('');
     }
 
     onLoadSample(): void {

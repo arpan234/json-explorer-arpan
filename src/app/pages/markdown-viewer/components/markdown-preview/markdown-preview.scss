@@ -31,7 +31,7 @@
 
     .extract-json-btn {
         height: 32px;
-        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-family: 'Arial', sans-serif;
         font-size: 0.76rem;
         font-weight: 600;
         border-radius: 6px;
@@ -55,7 +55,12 @@
     color: var(--mat-sys-on-surface);
 
     ::ng-deep {
-        h1, h2, h3, h4, h5, h6 {
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
             margin-top: 24px;
             margin-bottom: 16px;
             font-weight: 600;
@@ -93,7 +98,7 @@
             font-size: 85%;
             background: var(--mat-sys-surface-container);
             border-radius: 6px;
-            font-family: 'Fira Code', 'Cascadia Code', 'JetBrains Mono', monospace;
+            font-family: 'Fira Code', 'Cascadia Code', 'Menlo', monospace;
         }
 
         pre {
@@ -125,7 +130,8 @@
             margin-bottom: 16px;
         }
 
-        th, td {
+        th,
+        td {
             padding: 8px 16px;
             border: 1px solid var(--mat-sys-outline-variant);
             text-align: left;
@@ -136,7 +142,8 @@
             background: var(--mat-sys-surface-container);
         }
 
-        ul, ol {
+        ul,
+        ol {
             padding-left: 2em;
             margin-bottom: 16px;
         }

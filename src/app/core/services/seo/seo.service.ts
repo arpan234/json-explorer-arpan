@@ -50,19 +50,19 @@ export class SeoService {
         }
 
         const snapshot = route.snapshot;
+        let titleRoute = route;
+        while (!titleRoute.snapshot.routeConfig?.title && titleRoute.parent)
+            titleRoute = titleRoute.parent;
         const title =
-            snapshot.routeConfig?.title && typeof snapshot.routeConfig.title === 'string'
-                ? snapshot.routeConfig.title
+            titleRoute.snapshot.routeConfig?.title &&
+            typeof titleRoute.snapshot.routeConfig!.title === 'string'
+                ? titleRoute.snapshot.routeConfig!.title
                 : 'JSON & Markdown Formatter - json-md-formatter';
         const description =
             (snapshot.data?.['description'] as string | undefined) ??
             'An interactive online JSON to Markdown formatter, validator, and viewer. Easily format, explore, and convert JSON data to markdown tables and code blocks.';
-        const keywords = snapshot.data?.['keywords'] as string | undefined;
 
         this.meta.updateTag({ name: 'description', content: description });
-        if (keywords) {
-            this.meta.updateTag({ name: 'keywords', content: keywords });
-        }
 
         // Open Graph
         this.meta.updateTag({ property: 'og:url', content: canonicalUrl });
@@ -70,9 +70,9 @@ export class SeoService {
         this.meta.updateTag({ property: 'og:description', content: description });
 
         // Twitter Card
-        this.meta.updateTag({ property: 'twitter:url', content: canonicalUrl });
-        this.meta.updateTag({ property: 'twitter:title', content: title });
-        this.meta.updateTag({ property: 'twitter:description', content: description });
+        this.meta.updateTag({ name: 'twitter:url', content: canonicalUrl });
+        this.meta.updateTag({ name: 'twitter:title', content: title });
+        this.meta.updateTag({ name: 'twitter:description', content: description });
 
         // JSON-LD Structured Data
         const ldScript = this.document.querySelector("script[type='application/ld+json']");
@@ -80,7 +80,9 @@ export class SeoService {
             ldScript.textContent = JSON.stringify(
                 {
                     '@context': 'https://schema.org',
-                    '@type': 'WebApplication',
+                    '@type': ['privacy', 'about'].includes(snapshot.routeConfig?.path ?? '')
+                        ? 'WebPage'
+                        : 'WebApplication',
                     name: title,
                     alternateName: 'JSON & Markdown Formatter',
                     url: canonicalUrl,

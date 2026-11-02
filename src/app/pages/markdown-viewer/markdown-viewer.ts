@@ -6,8 +6,10 @@ import {
     inject,
     signal,
 } from '@angular/core';
+import { provideMarkdown } from 'ngx-markdown';
+import { ToolGuideComponent } from '../../shared/components/tool-guide/tool-guide';
 import { isPlatformBrowser } from '@angular/common';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -37,12 +39,13 @@ This viewer supports **bold**, *italic*, ~~strikethrough~~, and \`inline code\`.
     selector: 'app-markdown-viewer',
     standalone: true,
     imports: [
-        RouterLink,
+        ToolGuideComponent,
         MatIconModule,
         MatButtonModule,
         MarkdownInputComponent,
         MarkdownPreviewComponent,
     ],
+    providers: [provideMarkdown()],
     templateUrl: './markdown-viewer.html',
     styleUrl: './markdown-viewer.scss',
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -81,7 +84,9 @@ export class MarkdownViewerComponent {
             this.markdownContent.set(transferred);
             this.parserService.pendingMarkdownTransfer.set(null);
         } else if (isPlatformBrowser(this.platformId)) {
-            const params = new URLSearchParams(window.location.search);
+            const params = new URLSearchParams(
+                window.location.hash.slice(1) || window.location.search,
+            );
             const encoded = params.get('md');
             if (encoded) {
                 const decoded = this.parserService.decodeFromUrl(encoded);
@@ -129,8 +134,13 @@ export class MarkdownViewerComponent {
 
     onMarkdownInput(content: string): void {
         this.markdownContent.set(content);
-        if (content && this.isMobile()) {
-            this.activeMobileTab.set('output');
+        if (!content.trim() && isPlatformBrowser(this.platformId)) {
+            try {
+                localStorage.removeItem('json_md_last_md');
+            } catch {
+                /* Storage unavailable. */
+            }
+            this.savedSessionMarkdown.set(null);
         }
     }
 

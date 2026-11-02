@@ -9,7 +9,7 @@ html {
                 primary: mat.$azure-palette,
                 tertiary: mat.$blue-palette,
             ),
-            typography: Roboto,
+            typography: Arial,
             density: 0,
         )
     );
@@ -17,21 +17,21 @@ html {
 
 :root:not(.dark-theme) {
     // Elegant futuristic light design
-    --mat-sys-primary: #6366f1; // Indigo
+    --mat-sys-primary: #4f46e5; // Indigo
     --mat-sys-on-primary: #ffffff;
     --mat-sys-surface: #f8fafc;
     --mat-sys-on-surface: #0f172a;
-    --mat-sys-on-surface-variant: #64748b;
+    --mat-sys-on-surface-variant: #475569;
     --mat-sys-surface-container: #ffffff;
     --mat-sys-surface-container-low: #f1f5f9;
     --mat-sys-outline-variant: rgba(99, 102, 241, 0.1);
-    
+
     // Glassmorphism tokens
     --app-glass-bg: rgba(255, 255, 255, 0.75);
     --app-glass-border: rgba(99, 102, 241, 0.12);
     --app-glass-blur: 12px;
     --app-neon-glow: 0 0 15px rgba(99, 102, 241, 0.15);
-    
+
     // Type colors (light mode)
     --type-color-string: #0d9488;
     --type-color-number: #2563eb;
@@ -55,11 +55,14 @@ body {
     color-scheme: light;
     background-color: var(--mat-sys-surface);
     color: var(--mat-sys-on-surface);
-    font-family: 'Plus Jakarta Sans', 'Roboto', sans-serif !important;
+    font-family: Arial, sans-serif !important;
     margin: 0;
     height: 100%;
-    overflow: hidden;
-    transition: background-color 0.3s ease, color 0.3s ease;
+    overflow-x: hidden;
+    overflow-y: auto;
+    transition:
+        background-color 0.3s ease,
+        color 0.3s ease;
 }
 
 .dark-theme {
@@ -70,7 +73,7 @@ body {
                 tertiary: mat.$blue-palette,
                 theme-type: dark,
             ),
-            typography: Roboto,
+            typography: Arial,
             density: 0,
         )
     );
@@ -93,11 +96,11 @@ body {
     --app-neon-glow: 0 0 20px rgba(0, 240, 255, 0.35);
 
     // Type colors (dark mode)
-    --type-color-string: #4ade80;  // Emerald green
-    --type-color-number: #38bdf8;  // Light blue
+    --type-color-string: #4ade80; // Emerald green
+    --type-color-number: #38bdf8; // Light blue
     --type-color-boolean: #fb923c; // Warm orange
-    --type-color-null: #64748b;    // Slate gray
-    --type-color-object: #c084fc;  // Bright purple
+    --type-color-null: #64748b; // Slate gray
+    --type-color-object: #c084fc; // Bright purple
     --type-color-array: #c084fc;
 
     --scrollbar-thumb: rgba(0, 240, 255, 0.2);
@@ -132,8 +135,12 @@ body {
 }
 
 // Apply code font to all code containers
-.tree-container, .json-textarea, ngx-monaco-editor, code, pre {
-    font-family: 'JetBrains Mono', 'Fira Code', monospace !important;
+.tree-container,
+.json-textarea,
+ngx-monaco-editor,
+code,
+pre {
+    font-family: 'Menlo', 'Fira Code', monospace !important;
 }
 
 // Global visual transitions
@@ -169,15 +176,15 @@ body {
     border: 1px solid var(--app-glass-border, var(--mat-sys-outline-variant));
     padding: 20px;
     border-radius: 12px;
-    
+
     h3 {
         margin: 0 0 10px 0;
-        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-family: 'Arial', sans-serif;
         font-size: 1.1rem;
         font-weight: 600;
         color: var(--mat-sys-primary);
     }
-    
+
     p {
         margin: 0;
         font-size: 0.9rem;
@@ -189,7 +196,7 @@ body {
 .faq-container {
     h3 {
         margin: 0 0 16px 0;
-        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-family: 'Arial', sans-serif;
         font-size: 1.1rem;
         font-weight: 600;
         color: var(--mat-sys-primary);
@@ -205,20 +212,20 @@ body {
     overflow: hidden;
     width: 100%;
     box-sizing: border-box;
-    
+
     &[open] {
         background: rgba(255, 255, 255, 0.04);
         box-shadow: var(--app-neon-glow);
         border-color: rgba(0, 240, 255, 0.25);
-        
+
         summary {
             border-bottom: 1px solid var(--app-glass-border, var(--mat-sys-outline-variant));
             color: var(--mat-sys-primary);
         }
     }
-    
+
     summary {
-        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-family: 'Arial', sans-serif;
         font-size: 0.92rem;
         font-weight: 600;
         padding: 14px 18px;
@@ -228,12 +235,12 @@ body {
         color: var(--mat-sys-on-surface);
         transition: color 0.2s ease;
         display: list-item;
-        
+
         &:hover {
             color: var(--mat-sys-primary);
         }
     }
-    
+
     p {
         margin: 0;
         padding: 16px 18px;
@@ -247,12 +254,12 @@ body {
     .welcome-container {
         padding: 16px;
     }
-    
+
     .seo-section {
         padding-top: 20px;
         gap: 16px;
     }
-    
+
     .seo-card {
         padding: 16px;
         h3 {
@@ -262,7 +269,7 @@ body {
             font-size: 0.85rem;
         }
     }
-    
+
     .faq-item {
         summary {
             padding: 12px 14px;
@@ -275,3 +282,19 @@ body {
     }
 }
 
+:focus-visible {
+    outline: 3px solid var(--mat-sys-primary);
+    outline-offset: 3px;
+}
+mat-icon {
+    flex-shrink: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation: none !important;
+        transition: none !important;
+        scroll-behavior: auto !important;
+    }
+}

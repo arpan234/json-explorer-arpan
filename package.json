@@ -7,7 +7,8 @@
         "build": "ng build",
         "watch": "ng build --watch --configuration development",
         "test": "ng test",
-        "serve:ssr:json-explorer-arpan": "node dist/json-explorer-arpan/server/server.mjs"
+        "serve:ssr:json-explorer-arpan": "node dist/json-explorer-arpan/server/server.mjs",
+        "check:seo": "node scripts/check-seo.mjs"
     },
     "private": true,
     "packageManager": "npm@10.9.4",
@@ -26,6 +27,7 @@
         "@swimlane/ngx-charts": "^24.0.0-alpha.0",
         "express": "^5.1.0",
         "marked": "^18.0.4",
+        "monaco-editor": "^0.55.1",
         "ngx-markdown": "^21.3.0",
         "ngx-monaco-editor-v2": "^21.1.4",
         "rxjs": "~7.8.0",

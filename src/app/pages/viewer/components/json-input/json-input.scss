@@ -31,7 +31,7 @@
 }
 
 .input-title {
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Arial', sans-serif;
     font-weight: 600;
     font-size: 0.85rem;
     letter-spacing: 0.5px;
@@ -127,7 +127,7 @@
     align-items: center;
 
     button {
-        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-family: 'Arial', sans-serif;
         font-weight: 600;
         font-size: 0.8rem;
         letter-spacing: 0.3px;
@@ -145,11 +145,13 @@
     gap: 12px;
     background: rgba(7, 10, 19, 0.9);
     border: 2px dashed var(--mat-sys-primary);
-    box-shadow: inset var(--app-neon-glow), var(--app-neon-glow);
+    box-shadow:
+        inset var(--app-neon-glow),
+        var(--app-neon-glow);
     border-radius: 12px;
     backdrop-filter: blur(8px);
     z-index: 100;
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Arial', sans-serif;
     font-size: 1.05rem;
     font-weight: 600;
     color: var(--mat-sys-primary);
@@ -168,7 +170,8 @@
 }
 
 @keyframes float-icon {
-    0%, 100% {
+    0%,
+    100% {
         transform: translateY(0);
     }
     50% {

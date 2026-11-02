@@ -1,72 +1,45 @@
-# JsonViewer
+# JSON & Markdown Formatter
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.6.
+Free browser tools at [json-md-formatter.com](https://json-md-formatter.com/markdown) for JSON formatting, repair, tree exploration, CSV export, Markdown live preview and table conversion. Includes sample-based TypeScript, Go, Python Pydantic and PostgreSQL code generation.
 
-## Development server
+## Run and verify
 
-To start a local development server, run:
+Use a supported even-numbered Node.js LTS release compatible with Angular 21, then:
 
-```bash
-ng serve
+```sh
+npm ci
+npm start
+npm test -- --watch=false
+npm run build
+npm run check:seo
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+The development server uses port 4202. Production files are written to `dist/json-explorer-arpan/browser`. Angular prerenders the public tool and information routes so their headings, examples, links and metadata are present in the initial HTML.
 
-## Code scaffolding
+## Example: JSON to Markdown
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+Input:
 
-```bash
-ng generate component component-name
+```json
+[{"name":"Alice","score":95},{"name":"Bob","score":87}]
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+Open `/json-to-markdown`, paste the input, and copy the Markdown from Code Gen. Choose Open in Markdown Reader to preview it. To reverse the workflow, open `/markdown-to-json`, paste a pipe table and choose Extract Table to JSON in Preview.
 
-```bash
-ng generate --help
-```
+## Privacy
 
-## Building
+Processing runs in the browser. Local files are read on the device. The last valid JSON and last Markdown draft persist in local storage; Clear removes the corresponding draft. `/privacy` includes a control to delete both. New shared documents use URL fragments; encoding is not encryption and anyone with a link can read it. Legacy query-string share URLs remain readable. External Markdown images and the Google icon font can make network requests. Do not use private examples in issue reports.
 
-To build the project run:
+## Limitations
 
-```bash
-ng build
-```
+Generated code is a draft, inferred only from the supplied sample. Mixed types fall back to general types. Review generated names, nullability and validation rules. SQL targets PostgreSQL and needs review in a disposable database before importing; inferred parent identifiers do not enforce foreign keys. Markdown table extraction infers values and is not a lossless round trip. Token savings use a rough text-pattern estimate, not a model tokenizer.
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+## Deployment
 
-## Running unit tests
+Vercel builds with `npm run build` and serves `dist/json-explorer-arpan/browser`. `cleanUrls` serves prerendered `/route/index.html` pages; the configuration intentionally has no catch-all SPA rewrite. `/json` permanently redirects to `/`. Unknown URLs must return HTTP 404 using `public/404.html`.
 
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+Follow [the release and search monitoring checklist](docs/SEO-OPERATIONS.md) after deploying. Check the actual production responses because local static output cannot validate Vercel's routing configuration.
 
-```bash
-ng test
-```
+## Feedback
 
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
-
-## Deploy To Vercel
-
-This repository includes a `vercel.json` configuration for static Angular deployment.
-
-1. Push this project to a GitHub repository.
-2. In Vercel, click **Add New Project** and import your GitHub repository.
-3. Vercel will use:
-	- Build command: `npm run build`
-	- Output directory: `dist/json-explorer-arpan/browser`
-4. Deploy the project.
-
-The rewrite rule in `vercel.json` ensures Angular client-side routes work correctly on refresh.
+[Open an issue](https://github.com/arpan234/json-explorer-arpan/issues) with a small non-sensitive example, steps to reproduce, actual and expected output, and browser version. Include generated code when relevant. Source and issue visibility depend on repository access settings.

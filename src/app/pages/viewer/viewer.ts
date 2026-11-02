@@ -8,8 +8,9 @@ import {
     effect,
     PLATFORM_ID,
 } from '@angular/core';
+import { ToolGuideComponent } from '../../shared/components/tool-guide/tool-guide';
 import { isPlatformBrowser } from '@angular/common';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatButtonModule } from '@angular/material/button';
@@ -57,7 +58,7 @@ const SAMPLE_JSON = JSON.stringify(
     selector: 'app-viewer',
     standalone: true,
     imports: [
-        RouterLink,
+        ToolGuideComponent,
         MatTabsModule,
         MatButtonModule,
         MatIconModule,
@@ -171,7 +172,9 @@ export class ViewerComponent {
             this.parserService.pendingJsonTransfer.set(null);
             this.viewMode.set('table');
         } else if (isPlatformBrowser(this.platformId)) {
-            const params = new URLSearchParams(window.location.search);
+            const params = new URLSearchParams(
+                window.location.hash.slice(1) || window.location.search,
+            );
             const encoded = params.get('json');
             if (encoded) {
                 const decoded = this.parserService.decodeFromUrl(encoded);
@@ -289,6 +292,14 @@ export class ViewerComponent {
     onJsonInput(raw: string): void {
         const hadData = this.hasData();
         this.rawJson.set(raw);
+        if (!raw.trim() && isPlatformBrowser(this.platformId)) {
+            try {
+                localStorage.removeItem('json_md_last_json');
+            } catch {
+                /* Storage unavailable. */
+            }
+            this.savedSessionJson.set(null);
+        }
         if (!this.hasData()) return;
         if (!hadData) {
             this.viewMode.set(this.defaultViewMode());
@@ -380,8 +391,14 @@ export class ViewerComponent {
     shareJson(): void {
         const raw = this.rawJson();
         if (!raw || !isPlatformBrowser(this.platformId)) return;
+        if (
+            !window.confirm(
+                'Anyone with this link can read the document. Avoid sharing secrets or personal data. Copy a shareable link?',
+            )
+        )
+            return;
         const encoded = this.parserService.encodeForUrl(raw);
-        const shareUrl = `${window.location.origin}${window.location.pathname}?json=${encoded}`;
+        const shareUrl = `${window.location.origin}${window.location.pathname}#json=${encoded}`;
         navigator.clipboard.writeText(shareUrl);
         this.snackBar.open('Shareable link copied to clipboard', '', { duration: 2500 });
     }

@@ -9,6 +9,7 @@
         <span class="input-title">Markdown Input</span>
         <div class="input-actions">
             <button
+                aria-label="Align & prettify Markdown tables"
                 mat-button
                 (click)="formatMarkdownTables()"
                 matTooltip="Align & prettify Markdown tables"
@@ -29,6 +30,7 @@
 
     <div class="format-toolbar">
         <button
+            aria-label="Bold (**text**)"
             type="button"
             class="fmt-btn"
             (click)="insertFormatting('**', '**', 'bold')"
@@ -37,6 +39,7 @@
             <mat-icon>format_bold</mat-icon>
         </button>
         <button
+            aria-label="Italic (*text*)"
             type="button"
             class="fmt-btn"
             (click)="insertFormatting('*', '*', 'italic')"
@@ -45,6 +48,7 @@
             <mat-icon>format_italic</mat-icon>
         </button>
         <button
+            aria-label="Strikethrough (~~text~~)"
             type="button"
             class="fmt-btn"
             (click)="insertFormatting('~~', '~~', 'strikethrough')"
@@ -54,6 +58,7 @@
         </button>
         <div class="fmt-divider"></div>
         <button
+            aria-label="Heading (## )"
             type="button"
             class="fmt-btn"
             (click)="insertLinePrefix('## ')"
@@ -62,6 +67,7 @@
             <mat-icon>title</mat-icon>
         </button>
         <button
+            aria-label="Bullet List (- )"
             type="button"
             class="fmt-btn"
             (click)="insertLinePrefix('- ')"
@@ -70,6 +76,7 @@
             <mat-icon>format_list_bulleted</mat-icon>
         </button>
         <button
+            aria-label="Insert Link"
             type="button"
             class="fmt-btn"
             (click)="insertFormatting('[', '](https://example.com)', 'link')"
@@ -78,6 +85,7 @@
             <mat-icon>link</mat-icon>
         </button>
         <button
+            aria-label="Insert Code Block"
             type="button"
             class="fmt-btn"
             (click)="insertFormatting('\n```typescript\n', '\n```\n', '// code')"
@@ -86,6 +94,7 @@
             <mat-icon>code</mat-icon>
         </button>
         <button
+            aria-label="Insert Markdown Table"
             type="button"
             class="fmt-btn"
             (click)="insertTableTemplate()"
@@ -97,12 +106,14 @@
         <span class="fmt-spacer"></span>
         @if (docStats(); as stats) {
             <span class="doc-stats">
-                {{ stats.words }} words · {{ stats.chars }} chars · ~{{ stats.readingTimeMin }}m read
+                {{ stats.words }} words · {{ stats.chars }} chars · ~{{ stats.readingTimeMin }}m
+                read
             </span>
         }
     </div>
 
     <textarea
+        aria-label="Markdown source"
         #editorArea
         class="markdown-textarea"
         [ngModel]="inputText()"
@@ -113,7 +124,7 @@
     ></textarea>
 
     <div class="input-footer">
-        <button mat-flat-button (click)="onInput()">
+        <button mat-flat-button (click)="onPreview()">
             <mat-icon>visibility</mat-icon>
             Preview
         </button>
@@ -137,3 +148,7 @@
         </div>
     }
 </div>
+
+@if (fileError()) {
+    <p role="alert">{{ fileError() }}</p>
+}

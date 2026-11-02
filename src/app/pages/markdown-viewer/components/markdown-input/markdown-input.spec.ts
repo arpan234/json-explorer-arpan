@@ -30,7 +30,7 @@ describe('MarkdownInputComponent', () => {
             expect(emitSpy).toHaveBeenCalledWith('# Hello');
         });
 
-        it('should not emit when input is empty', () => {
+        it('should emit whitespace so deleting content clears the preview', () => {
             const fixture = TestBed.createComponent(MarkdownInputComponent);
             const component = fixture.componentInstance;
             const emitSpy = vi.spyOn(component.markdownParsed, 'emit');
@@ -38,10 +38,23 @@ describe('MarkdownInputComponent', () => {
             component.inputText.set('   ');
             component.onInput();
 
-            expect(emitSpy).not.toHaveBeenCalled();
+            expect(emitSpy).toHaveBeenCalledWith('   ');
         });
     });
 
+    it('preserves significant leading Markdown indentation', () => {
+        const component = TestBed.createComponent(MarkdownInputComponent).componentInstance;
+        const emit = vi.spyOn(component.markdownParsed, 'emit');
+        component.inputText.set('    code\n');
+        component.onInput();
+        expect(emit).toHaveBeenCalledWith('    code\n');
+    });
+    it('preserves left, right and center table alignment', () => {
+        const component = TestBed.createComponent(MarkdownInputComponent).componentInstance;
+        component.inputText.set('| A | B | C |\n| :--- | ---: | :---: |\n| x | y | z |');
+        component.formatMarkdownTables();
+        expect(component.inputText()).toContain('| :--- | ---: | :---: |');
+    });
     describe('onClear()', () => {
         it('should clear input and emit empty string', () => {
             const fixture = TestBed.createComponent(MarkdownInputComponent);

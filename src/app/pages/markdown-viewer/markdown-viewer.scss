@@ -1,16 +1,18 @@
 :host {
     display: block;
-    height: calc(100vh - 64px);
+    min-width: 0;
 }
 
 .viewer-container {
     display: flex;
-    height: 100%;
+    height: min(76svh, 850px);
+    min-height: 540px;
 
     &.mobile-view {
         flex-direction: column;
 
-        .input-panel, .output-panel {
+        .input-panel,
+        .output-panel {
             flex: 1;
             width: 100% !important;
             border-right: none;
@@ -19,7 +21,7 @@
 }
 
 .mobile-nav-bar {
-    display: flex;
+    display: none;
     background: var(--app-glass-bg);
     border-bottom: 1px solid var(--app-glass-border);
     backdrop-filter: blur(var(--app-glass-blur));
@@ -31,7 +33,7 @@
 
     .mobile-nav-btn {
         flex: 1;
-        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-family: 'Arial', sans-serif;
         font-size: 0.85rem;
         font-weight: 600;
         height: 36px;
@@ -128,7 +130,7 @@
     margin: 20px 0;
 
     h3 {
-        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-family: 'Arial', sans-serif;
         font-size: 1rem;
         font-weight: 600;
         margin-bottom: 12px;
@@ -143,7 +145,7 @@
 
     .tool-chip {
         text-decoration: none;
-        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-family: 'Arial', sans-serif;
         font-size: 0.78rem;
         font-weight: 600;
         padding: 6px 12px;
@@ -157,5 +159,27 @@
             background: rgba(0, 240, 255, 0.14);
             box-shadow: var(--app-neon-glow);
         }
+    }
+}
+
+@media (max-width: 768px) {
+    .viewer-container {
+        flex-direction: column;
+        height: 72svh;
+        min-height: 520px;
+    }
+    .mobile-nav-bar {
+        display: flex;
+    }
+    .input-panel,
+    .output-panel {
+        flex: 1;
+        min-height: 0;
+        width: 100% !important;
+        border-right: none;
+    }
+    .mobile-inactive,
+    .resize-handle {
+        display: none;
     }
 }

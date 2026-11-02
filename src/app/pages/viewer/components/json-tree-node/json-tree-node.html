@@ -1,4 +1,9 @@
-<div class="tree-node" [class.match]="isDirectMatch()" [class.active-match]="isActiveMatch()" [style.padding-left.px]="depth() === 0 ? 0 : 10">
+<div
+    class="tree-node"
+    [class.match]="isDirectMatch()"
+    [class.active-match]="isActiveMatch()"
+    [style.padding-left.px]="depth() === 0 ? 0 : 10"
+>
     <div
         class="node-row"
         [id]="'node-' + pathKey()"

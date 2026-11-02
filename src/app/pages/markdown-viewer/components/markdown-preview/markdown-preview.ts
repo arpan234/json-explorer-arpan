@@ -55,7 +55,7 @@ export class MarkdownPreviewComponent {
     }
 
     copyHtml(): void {
-        const html = this.previewBody()?.nativeElement.innerHTML;
+        const html = this.previewBody()?.nativeElement.querySelector('markdown')?.innerHTML;
         if (!html) return;
         navigator.clipboard.writeText(html.trim());
         this.snackBar.open('Rendered HTML copied to clipboard', '', { duration: 2000 });
@@ -64,8 +64,14 @@ export class MarkdownPreviewComponent {
     shareMarkdown(): void {
         const md = this.content();
         if (!md || !isPlatformBrowser(this.platformId)) return;
+        if (
+            !window.confirm(
+                'Anyone with this link can read the document. Avoid sharing secrets or personal data. Copy a shareable link?',
+            )
+        )
+            return;
         const encoded = this.parserService.encodeForUrl(md);
-        const shareUrl = `${window.location.origin}${window.location.pathname}?md=${encoded}`;
+        const shareUrl = `${window.location.origin}${window.location.pathname}#md=${encoded}`;
         navigator.clipboard.writeText(shareUrl);
         this.snackBar.open('Shareable link copied to clipboard', '', { duration: 2500 });
     }

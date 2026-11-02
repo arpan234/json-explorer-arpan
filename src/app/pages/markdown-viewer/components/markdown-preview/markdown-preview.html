@@ -4,6 +4,7 @@
         <div class="preview-actions">
             @if (extractedTables().length > 0) {
                 <button
+                    aria-label="Convert Markdown table(s) into JSON and open in JSON Viewer"
                     mat-flat-button
                     class="extract-json-btn"
                     (click)="extractTablesToJson()"
@@ -14,6 +15,7 @@
                 </button>
             }
             <button
+                aria-label="Copy shareable link"
                 mat-icon-button
                 (click)="shareMarkdown()"
                 matTooltip="Copy shareable link"
@@ -21,6 +23,7 @@
                 <mat-icon>share</mat-icon>
             </button>
             <button
+                aria-label="Copy rendered HTML"
                 mat-icon-button
                 (click)="copyHtml()"
                 matTooltip="Copy rendered HTML"
@@ -28,6 +31,7 @@
                 <mat-icon>html</mat-icon>
             </button>
             <button
+                aria-label="Copy Markdown"
                 mat-icon-button
                 (click)="copyMarkdown()"
                 matTooltip="Copy Markdown"
@@ -35,6 +39,7 @@
                 <mat-icon>content_copy</mat-icon>
             </button>
             <button
+                aria-label="Download .md file"
                 mat-icon-button
                 (click)="downloadMarkdown()"
                 matTooltip="Download .md file"

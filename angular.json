@@ -34,7 +34,9 @@
                                 "output": "/assets/monaco/min/vs"
                             }
                         ],
-                        "styles": ["src/styles.scss"],
+                        "styles": [
+                            "src/styles.scss"
+                        ],
                         "server": "src/main.server.ts",
                         "outputMode": "server",
                         "security": {
@@ -58,7 +60,12 @@
                                     "maximumError": "16kB"
                                 }
                             ],
-                            "outputHashing": "all"
+                            "outputHashing": "all",
+                            "optimization": {
+                                "scripts": true,
+                                "styles": true,
+                                "fonts": false
+                            }
                         },
                         "development": {
                             "optimization": false,

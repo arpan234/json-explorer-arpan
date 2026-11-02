@@ -17,14 +17,17 @@
                 @if (stats.savedPercent > 0) {
                     <span
                         class="token-saver-badge"
-                        matTooltip="Converting JSON to Markdown reduces LLM prompt token count for ChatGPT, Claude & Gemini"
+                        matTooltip="Rough estimate based on text patterns, not a model tokenizer. Actual usage varies by model and content."
                     >
-                        ⚡ {{ stats.jsonTokens }} → {{ stats.mdTokens }} tokens (-{{ stats.savedPercent }}%)
+                        Estimated: {{ stats.jsonTokens }} → {{ stats.mdTokens }} tokens (-{{
+                            stats.savedPercent
+                        }}%)
                     </span>
                 }
             }
             @if (selectedLanguage() === 'markdown') {
                 <button
+                    aria-label="Preview generated Markdown in Markdown Reader"
                     mat-stroked-button
                     class="open-md-btn"
                     (click)="openInMarkdownReader()"
@@ -36,6 +39,7 @@
                 </button>
             }
             <button
+                aria-label="Copy generated code"
                 mat-icon-button
                 (click)="copyCode()"
                 matTooltip="Copy generated code"
@@ -47,9 +51,6 @@
     </div>
 
     <div class="editor-wrapper">
-        <ngx-monaco-editor
-            [options]="editorOptions()"
-            [ngModel]="generatedCode()"
-        />
+        <ngx-monaco-editor [options]="editorOptions()" [ngModel]="generatedCode()" />
     </div>
 </div>

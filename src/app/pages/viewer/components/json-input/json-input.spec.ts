@@ -50,6 +50,17 @@ describe('JsonInputComponent', () => {
         expect(component.error()).toBeNull();
     });
 
+    it('emits empty and invalid edits rather than leaving stale output', () => {
+        const component = TestBed.createComponent(JsonInputComponent).componentInstance;
+        const emit = vi.spyOn(component.jsonParsed, 'emit');
+        component.onTextChange('');
+        expect(emit).toHaveBeenLastCalledWith('');
+        component.onTextChange('{broken');
+        expect(emit).toHaveBeenLastCalledWith('{broken');
+        expect(component.error()).toBeTruthy();
+        component.onClear();
+        expect(emit).toHaveBeenLastCalledWith('');
+    });
     describe('onPaste()', () => {
         it('should auto-parse valid JSON on paste', () => {
             const fixture = TestBed.createComponent(JsonInputComponent);

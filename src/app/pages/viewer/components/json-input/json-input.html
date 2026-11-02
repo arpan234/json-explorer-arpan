@@ -9,6 +9,7 @@
         <span class="input-title">JSON Input</span>
         <div class="input-actions">
             <button
+                aria-label="Fix trailing commas, single quotes, unquoted keys, or escaped JSON"
                 mat-button
                 (click)="onRepair()"
                 matTooltip="Fix trailing commas, single quotes, unquoted keys, or escaped JSON"
@@ -16,7 +17,12 @@
                 <mat-icon>auto_fix_high</mat-icon>
                 Repair
             </button>
-            <button mat-button (click)="onMinify()" matTooltip="Minify / Compact JSON">
+            <button
+                aria-label="Minify / Compact JSON"
+                mat-button
+                (click)="onMinify()"
+                matTooltip="Minify / Compact JSON"
+            >
                 <mat-icon>compress</mat-icon>
                 Minify
             </button>
@@ -32,6 +38,7 @@
     </div>
 
     <textarea
+        aria-label="JSON source"
         class="json-textarea"
         [ngModel]="inputText()"
         (ngModelChange)="onTextChange($event)"

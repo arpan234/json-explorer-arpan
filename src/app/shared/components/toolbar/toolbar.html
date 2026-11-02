@@ -1,12 +1,15 @@
 <mat-toolbar color="primary">
     <mat-icon class="app-icon">data_object</mat-icon>
-    <h1 class="app-title">json-md-formatter</h1>
+    <a class="app-title brand-link" routerLink="/" aria-label="JSON and Markdown Formatter home"
+        >json-md-formatter</a
+    >
 
     <nav mat-tab-nav-bar [tabPanel]="tabPanel" class="nav-tabs">
         @for (link of navLinks; track link.path) {
             <a
                 mat-tab-link
                 [routerLink]="link.path"
+                [attr.aria-label]="link.label"
                 routerLinkActive
                 #rla="routerLinkActive"
                 [active]="rla.isActive"
@@ -21,6 +24,7 @@
     <span class="spacer"></span>
     <button
         mat-icon-button
+        [attr.aria-label]="isDark() ? 'Switch to light mode' : 'Switch to dark mode'"
         (click)="toggleTheme()"
         [matTooltip]="isDark() ? 'Light mode' : 'Dark mode'"
     >

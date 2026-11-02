@@ -25,8 +25,10 @@ import { FormsModule } from '@angular/forms';
 export class MarkdownInputComponent {
     readonly externalMarkdown = input<string>('');
     readonly markdownParsed = output<string>();
+    readonly previewRequested = output<void>();
 
     readonly inputText = signal('');
+    readonly fileError = signal('');
     readonly isDragOver = signal(false);
 
     readonly fileInput = viewChild<ElementRef<HTMLInputElement>>('fileInput');
@@ -38,24 +40,26 @@ export class MarkdownInputComponent {
         const words = trimmed ? trimmed.split(/\s+/).length : 0;
         const chars = text.length;
         const lines = text ? text.split(/\r?\n/).length : 0;
-        const readingTimeMin = Math.max(1, Math.ceil(words / 200));
+        const readingTimeMin = Math.ceil(words / 200);
         return { words, chars, lines, readingTimeMin };
     });
 
     constructor() {
         effect(() => {
             const ext = this.externalMarkdown();
-            if (ext && ext !== this.inputText()) {
+            if (ext !== this.inputText()) {
                 this.inputText.set(ext);
             }
         });
     }
 
+    onPreview(): void {
+        this.onInput();
+        this.previewRequested.emit();
+    }
+
     onInput(): void {
-        const raw = this.inputText().trim();
-        if (raw) {
-            this.markdownParsed.emit(raw);
-        }
+        this.markdownParsed.emit(this.inputText());
     }
 
     insertFormatting(prefix: string, suffix: string, placeholder: string): void {
@@ -65,7 +69,7 @@ export class MarkdownInputComponent {
         if (!textarea) {
             const updated = `${current}${prefix}${placeholder}${suffix}`;
             this.inputText.set(updated);
-            this.markdownParsed.emit(updated.trim());
+            this.markdownParsed.emit(updated);
             return;
         }
 
@@ -75,7 +79,7 @@ export class MarkdownInputComponent {
         const updated = current.slice(0, start) + prefix + selected + suffix + current.slice(end);
 
         this.inputText.set(updated);
-        this.markdownParsed.emit(updated.trim());
+        this.markdownParsed.emit(updated);
     }
 
     insertLinePrefix(prefix: string): void {
@@ -83,7 +87,7 @@ export class MarkdownInputComponent {
         const sep = current && !current.endsWith('\n') ? '\n' : '';
         const updated = `${current}${sep}${prefix}Item`;
         this.inputText.set(updated);
-        this.markdownParsed.emit(updated.trim());
+        this.markdownParsed.emit(updated);
     }
 
     insertTableTemplate(): void {
@@ -94,10 +98,11 @@ export class MarkdownInputComponent {
             '| Value B | 200 | false |',
         ].join('\n');
         const current = this.inputText();
-        const sep = current && !current.endsWith('\n\n') ? (current.endsWith('\n') ? '\n' : '\n\n') : '';
+        const sep =
+            current && !current.endsWith('\n\n') ? (current.endsWith('\n') ? '\n' : '\n\n') : '';
         const updated = `${current}${sep}${template}\n`;
         this.inputText.set(updated);
-        this.markdownParsed.emit(updated.trim());
+        this.markdownParsed.emit(updated);
     }
 
     formatMarkdownTables(): void {
@@ -121,11 +126,7 @@ export class MarkdownInputComponent {
         const out: string[] = [];
         let i = 0;
         while (i < lines.length) {
-            if (
-                i < lines.length - 1 &&
-                lines[i].includes('|') &&
-                isSep(lines[i + 1])
-            ) {
+            if (i < lines.length - 1 && lines[i].includes('|') && isSep(lines[i + 1])) {
                 const tableRows: string[][] = [splitRow(lines[i]), splitRow(lines[i + 1])];
                 i += 2;
                 while (i < lines.length && lines[i].trim().includes('|')) {
@@ -147,7 +148,13 @@ export class MarkdownInputComponent {
                     const formattedCells = colWidths.map((w, cIdx) => {
                         const cell = row[cIdx] ?? '';
                         if (rIdx === 1) {
-                            return '-'.repeat(w);
+                            const left = cell.startsWith(':') ? ':' : '';
+                            const right = cell.endsWith(':') ? ':' : '';
+                            return (
+                                left +
+                                '-'.repeat(Math.max(3, w - left.length - right.length)) +
+                                right
+                            );
                         }
                         return cell.padEnd(w, ' ');
                     });
@@ -161,7 +168,7 @@ export class MarkdownInputComponent {
 
         const formatted = out.join('\n');
         this.inputText.set(formatted);
-        this.markdownParsed.emit(formatted.trim());
+        this.markdownParsed.emit(formatted);
     }
 
     onFileSelect(event: Event): void {
@@ -247,15 +254,23 @@ function greet(user: User): string {
     }
 
     private readFile(file: File): void {
-        if (!file.name.endsWith('.md') && !file.name.endsWith('.markdown') && file.type !== 'text/markdown') {
+        if (
+            !file.name.endsWith('.md') &&
+            !file.name.endsWith('.markdown') &&
+            file.type !== 'text/markdown'
+        ) {
+            this.fileError.set('Choose a .md or .markdown file.');
             return;
         }
-
+        this.fileError.set('');
         const reader = new FileReader();
         reader.onload = () => {
             const text = reader.result as string;
             this.inputText.set(text);
             this.markdownParsed.emit(text);
+        };
+        reader.onerror = () => {
+            this.fileError.set('Unable to read this file. Please try again.');
         };
         reader.readAsText(file);
     }

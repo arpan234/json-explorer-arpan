@@ -46,12 +46,12 @@ describe('CodeGeneratorService', () => {
             const code = service.generate(testObject, 'go');
             expect(code).toContain('package main');
             expect(code).toContain('type Root struct');
-            expect(code).toContain('Name string `json:"name"`');
-            expect(code).toContain('Active bool `json:"active"`');
-            expect(code).toContain('Count int `json:"count"`');
-            expect(code).toContain('Rating float64 `json:"rating"`');
-            expect(code).toContain('Config RootConfig `json:"config"`');
-            expect(code).toContain('Users []RootUser `json:"users"`');
+            expect(code).toContain('Name string');
+            expect(code).toContain('Active bool');
+            expect(code).toContain('Count int');
+            expect(code).toContain('Rating float64');
+            expect(code).toContain('Config RootConfig');
+            expect(code).toContain('Users []RootUser');
             expect(code).toContain('type RootConfig struct');
             expect(code).toContain('type RootUser struct');
         });
@@ -76,24 +76,46 @@ describe('CodeGeneratorService', () => {
     });
 
     describe('generate - sql', () => {
-        it('should generate valid SQL CREATE TABLE and INSERT statements', () => {
-            const code = service.generate(testObject, 'sql');
-            expect(code).toContain('-- Tables Definitions');
-            expect(code).toContain('CREATE TABLE root (');
-            expect(code).toContain('name VARCHAR(255)');
-            expect(code).toContain('active BOOLEAN');
-            expect(code).toContain('count INT');
-            expect(code).toContain('rating DECIMAL(10, 2)');
-            expect(code).toContain('CREATE TABLE root_config (');
-            expect(code).toContain('CREATE TABLE root_users (');
-            expect(code).toContain('-- Inserts Statements');
-            expect(code).toContain('INSERT INTO root (');
-            expect(code).toContain("VALUES (1, 'JSON Explorer', '1.0.0', true, 5, 4.8);");
-            expect(code).toContain('INSERT INTO root_config (');
-            expect(code).toContain('INSERT INTO root_users (');
+        it('unions row fields, preserves input ids and declares nested tables once', () => {
+            const sql = service.generate(
+                [
+                    { id: 4, child: { name: "O'Reilly" } },
+                    { id: 5, extra: true, child: { name: 'Bob' } },
+                ],
+                'sql',
+            );
+            expect(sql.match(/CREATE TABLE "root" /g)).toHaveLength(1);
+            expect(sql.match(/CREATE TABLE "root__5_child" /g)).toHaveLength(1);
+            expect(sql).toContain('"id" NUMERIC');
+            expect(sql).toContain('"extra" BOOLEAN');
+            expect(sql).toContain('"_row_id" SERIAL PRIMARY KEY');
+            expect(sql).toContain("'O''Reilly'");
+            expect(sql).toContain('NULL');
+        });
+        it('does not collide with user fields named like bookkeeping keys', () => {
+            const sql = service.generate({ __row: 10, _row_id: 20 }, 'sql');
+            expect(sql).toContain('"_row_id_" SERIAL PRIMARY KEY');
+            expect(sql).toContain('10, 20, 1');
         });
     });
-
+    it('includes definitions for array-root TypeScript and Python models', () => {
+        expect(service.generate([{ name: 'A' }], 'typescript')).toContain(
+            'export interface RootItem',
+        );
+        expect(service.generate([{ name: 'A' }], 'typescript')).toContain(
+            'export type Root = RootItem[]',
+        );
+        expect(service.generate([{ name: 'A' }], 'python')).toContain('class RootItem(BaseModel)');
+    });
+    it('uses Python aliases for invalid property names and imports Any', () => {
+        const python = service.generate(
+            { 'first-name': 'A', class: 1, values: [1, 'x'] },
+            'python',
+        );
+        expect(python).toContain('alias="first-name"');
+        expect(python).toContain('alias="class"');
+        expect(python).toContain('Any');
+    });
     describe('generate - markdown', () => {
         it('should generate Markdown document with tables for nested object arrays', () => {
             const md = service.generate(testObject, 'markdown');

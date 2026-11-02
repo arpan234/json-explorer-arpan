@@ -8,7 +8,9 @@
                     aria-label="Select JSON Array"
                 >
                     @for (entry of availableArrays(); track entry.path) {
-                        <mat-button-toggle [value]="entry.path">{{ entry.label }}</mat-button-toggle>
+                        <mat-button-toggle [value]="entry.path">{{
+                            entry.label
+                        }}</mat-button-toggle>
                     }
                 </mat-button-toggle-group>
             } @else if (activeArrayEntry(); as entry) {
@@ -18,9 +20,10 @@
                 @if (stats.savedPercent > 0) {
                     <span
                         class="dataset-badge token-badge"
-                        matTooltip="Copying as a Markdown table saves LLM prompt tokens compared to raw JSON"
+                        matTooltip="Rough estimate based on text patterns, not a model tokenizer. Actual usage varies by model and content."
                     >
-                        ⚡ -{{ stats.savedPercent }}% LLM tokens ({{ stats.jsonTokens }} → {{ stats.mdTokens }})
+                        Estimated -{{ stats.savedPercent }}% tokens ({{ stats.jsonTokens }} →
+                        {{ stats.mdTokens }})
                     </span>
                 }
             }
@@ -28,6 +31,7 @@
 
         <div class="table-toolbar__right">
             <button
+                aria-label="Copy table as GitHub-Flavored Markdown"
                 mat-stroked-button
                 class="export-btn"
                 (click)="copyAsMarkdown()"
@@ -37,6 +41,7 @@
                 Copy Markdown Table
             </button>
             <button
+                aria-label="Copy table as CSV"
                 mat-stroked-button
                 class="export-btn"
                 (click)="copyAsCsv()"
@@ -46,6 +51,7 @@
                 Copy CSV
             </button>
             <button
+                aria-label="Open table in Markdown Reader"
                 mat-flat-button
                 class="export-btn primary-btn"
                 (click)="openInMarkdownReader()"
