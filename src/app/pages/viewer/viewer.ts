@@ -9,6 +9,7 @@ import {
     PLATFORM_ID,
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatButtonModule } from '@angular/material/button';
@@ -21,6 +22,7 @@ import { FormsModule } from '@angular/forms';
 
 import { JsonParserService } from '../../core/services/json-parser/json-parser.service';
 import { JsonSearchService } from '../../core/services/json-search/json-search.service';
+import { CodeLang } from '../../core/services/code-generator/code-generator.service';
 import { ViewMode } from '../../core/constants/json-viewer.constants';
 import { JsonNode } from '../../core/interfaces';
 import { BreadcrumbsComponent } from '../../shared/components/breadcrumbs/breadcrumbs';
@@ -31,10 +33,31 @@ import { JsonTableComponent } from './components/json-table/json-table';
 import { JsonChartComponent } from './components/json-chart/json-chart';
 import { JsonCodegenComponent } from './components/json-codegen/json-codegen';
 
+const SAMPLE_JSON = JSON.stringify(
+    {
+        name: 'JSON Viewer',
+        version: '1.0.0',
+        features: ['tree view', 'search', 'editing', 'table', 'charts'],
+        config: {
+            theme: 'light',
+            autoFormat: true,
+            maxDepth: 10,
+        },
+        users: [
+            { id: 1, name: 'Alice', score: 95, active: true },
+            { id: 2, name: 'Bob', score: 87, active: false },
+            { id: 3, name: 'Charlie', score: 92, active: true },
+        ],
+    },
+    null,
+    2,
+);
+
 @Component({
     selector: 'app-viewer',
     standalone: true,
     imports: [
+        RouterLink,
         MatTabsModule,
         MatButtonModule,
         MatIconModule,
@@ -60,9 +83,18 @@ export class ViewerComponent {
     private readonly snackBar = inject(MatSnackBar);
     private readonly breakpointObserver = inject(BreakpointObserver);
     private readonly platformId = inject(PLATFORM_ID);
+    private readonly route = inject(ActivatedRoute);
 
     readonly rawJson = signal('');
     readonly viewMode = signal<ViewMode>('tree');
+    readonly defaultViewMode = signal<ViewMode>('tree');
+    readonly defaultCodeLang = signal<CodeLang>('markdown');
+    readonly seoHeading = signal('About json-md-formatter');
+    readonly seoSubheading = signal(
+        'Welcome to json-md-formatter, an interactive online suite for formatting, validating, and exploring JSON, as as well as converting JSON structures into clean Markdown tables and code blocks. Built with speed and security in mind, this tool runs entirely inside your browser—meaning none of your data is sent to any server.',
+    );
+    readonly savedSessionJson = signal<string | null>(null);
+
     readonly searchQuery = signal('');
     readonly selectedPath = signal<string[]>([]);
     readonly showSearch = signal(false);
@@ -117,6 +149,21 @@ export class ViewerComponent {
     });
 
     constructor() {
+        const routeData = this.route.snapshot?.data ?? {};
+        if (routeData['defaultTab']) {
+            this.defaultViewMode.set(routeData['defaultTab'] as ViewMode);
+            this.viewMode.set(routeData['defaultTab'] as ViewMode);
+        }
+        if (routeData['defaultLang']) {
+            this.defaultCodeLang.set(routeData['defaultLang'] as CodeLang);
+        }
+        if (routeData['heading']) {
+            this.seoHeading.set(routeData['heading'] as string);
+        }
+        if (routeData['subheading']) {
+            this.seoSubheading.set(routeData['subheading'] as string);
+        }
+
         // Check if JSON was transferred from Markdown Reader
         const transferred = this.parserService.pendingJsonTransfer();
         if (transferred) {
@@ -132,7 +179,28 @@ export class ViewerComponent {
                     this.rawJson.set(decoded);
                 }
             }
+
+            try {
+                const saved = localStorage.getItem('json_md_last_json');
+                if (saved && this.parserService.validate(saved).valid) {
+                    this.savedSessionJson.set(saved);
+                }
+            } catch {
+                // ignore storage errors
+            }
         }
+
+        // Persist valid JSON to localStorage in browser
+        effect(() => {
+            const raw = this.rawJson();
+            if (isPlatformBrowser(this.platformId) && raw.trim() && !this.parseError()) {
+                try {
+                    localStorage.setItem('json_md_last_json', raw);
+                } catch {
+                    // ignore quota errors
+                }
+            }
+        });
 
         // Reset or adjust activeMatchIndex when search results change
         effect(() => {
@@ -219,11 +287,43 @@ export class ViewerComponent {
     });
 
     onJsonInput(raw: string): void {
+        const hadData = this.hasData();
         this.rawJson.set(raw);
         if (!this.hasData()) return;
-        this.viewMode.set('tree');
+        if (!hadData) {
+            this.viewMode.set(this.defaultViewMode());
+        }
         if (this.isMobile()) {
             this.activeMobileTab.set('output');
+        }
+    }
+
+    loadSampleFromWelcome(): void {
+        this.onJsonInput(SAMPLE_JSON);
+    }
+
+    async pasteFromClipboard(): Promise<void> {
+        if (!isPlatformBrowser(this.platformId) || !navigator.clipboard?.readText) return;
+        try {
+            const text = (await navigator.clipboard.readText()).trim();
+            if (!text) return;
+            const repaired = this.parserService.repairJson(text);
+            if (repaired.valid) {
+                this.onJsonInput(repaired.repaired);
+            } else {
+                this.rawJson.set(text);
+            }
+        } catch {
+            this.snackBar.open('Use Ctrl+V / Cmd+V in the left editor to paste', '', {
+                duration: 2500,
+            });
+        }
+    }
+
+    restoreSavedSession(): void {
+        const saved = this.savedSessionJson();
+        if (saved) {
+            this.onJsonInput(saved);
         }
     }
 

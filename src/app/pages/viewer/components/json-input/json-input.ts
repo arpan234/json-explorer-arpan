@@ -45,6 +45,19 @@ export class JsonInputComponent {
         });
     }
 
+    onTextChange(value: string): void {
+        this.inputText.set(value);
+        const trimmed = value.trim();
+        if (!trimmed) {
+            this.error.set(null);
+            return;
+        }
+        if (this.parserService.validate(trimmed).valid) {
+            this.error.set(null);
+            this.jsonParsed.emit(trimmed);
+        }
+    }
+
     onPaste(event: ClipboardEvent): void {
         const text = event.clipboardData?.getData('text/plain')?.trim();
         if (!text) return;

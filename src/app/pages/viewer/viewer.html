@@ -199,7 +199,9 @@
                 class="view-tabs"
             >
                 <mat-tab label="Raw">
-                    <app-raw-editor [json]="rawJson()" (jsonChange)="onRawEditorChange($event)" />
+                    @defer (when viewMode() === 'raw') {
+                        <app-raw-editor [json]="rawJson()" (jsonChange)="onRawEditorChange($event)" />
+                    }
                 </mat-tab>
 
                 <mat-tab label="Tree">
@@ -224,19 +226,28 @@
                 </mat-tab>
 
                 <mat-tab label="Table" [disabled]="!isTableCompatible()">
-                    @if (rootNode(); as root) {
-                        <app-json-table [data]="root" />
+                    @defer (when viewMode() === 'table') {
+                        @if (rootNode(); as root) {
+                            <app-json-table [data]="root" />
+                        }
                     }
                 </mat-tab>
 
                 <mat-tab label="Chart" [disabled]="!isChartCompatible()">
-                    @if (rootNode(); as root) {
-                        <app-json-chart [data]="root" />
+                    @defer (when viewMode() === 'chart') {
+                        @if (rootNode(); as root) {
+                            <app-json-chart [data]="root" />
+                        }
                     }
                 </mat-tab>
 
                 <mat-tab label="Code Gen">
-                    <app-json-codegen [rawJson]="rawJson()" />
+                    @defer (when viewMode() === 'codegen') {
+                        <app-json-codegen
+                            [rawJson]="rawJson()"
+                            [initialLanguage]="defaultCodeLang()"
+                        />
+                    }
                 </mat-tab>
             </mat-tab-group>
         } @else {
@@ -244,13 +255,44 @@
                 <div class="empty-state">
                     <mat-icon class="empty-icon">data_object</mat-icon>
                     <h2>No JSON loaded</h2>
-                    <p>Paste JSON in the input panel or upload a .json file to get started.</p>
+                    <p>Paste JSON in the input panel, drop a .json file, or try sample data below.</p>
+                    <div class="empty-cta-group">
+                        <button mat-flat-button (click)="loadSampleFromWelcome()">
+                            <mat-icon>science</mat-icon>
+                            Load Sample JSON
+                        </button>
+                        <button mat-stroked-button (click)="pasteFromClipboard()">
+                            <mat-icon>content_paste</mat-icon>
+                            Paste from Clipboard
+                        </button>
+                        @if (savedSessionJson()) {
+                            <button mat-stroked-button (click)="restoreSavedSession()">
+                                <mat-icon>history</mat-icon>
+                                Restore Last Session
+                            </button>
+                        }
+                    </div>
                 </div>
 
                 <div class="seo-section">
                     <div class="seo-card">
-                        <h3>About json-md-formatter</h3>
-                        <p>Welcome to <strong>json-md-formatter</strong>, an interactive online suite for formatting, validating, and exploring JSON, as well as converting JSON structures into clean Markdown tables and code blocks. Built with speed and security in mind, this tool runs entirely inside your browser—meaning none of your data is sent to any server.</p>
+                        <h3>{{ seoHeading() }}</h3>
+                        <p>{{ seoSubheading() }}</p>
+                    </div>
+
+                    <div class="seo-tools-grid">
+                        <h3>Popular JSON &amp; Markdown Tools</h3>
+                        <div class="tool-links">
+                            <a routerLink="/json-to-markdown" class="tool-chip">JSON to Markdown Table</a>
+                            <a routerLink="/markdown-to-json" class="tool-chip">Markdown Table to JSON</a>
+                            <a routerLink="/json-to-typescript" class="tool-chip">JSON to TypeScript</a>
+                            <a routerLink="/json-to-python" class="tool-chip">JSON to Python Pydantic</a>
+                            <a routerLink="/json-to-go" class="tool-chip">JSON to Go Struct</a>
+                            <a routerLink="/json-to-sql" class="tool-chip">JSON to SQL Schema</a>
+                            <a routerLink="/json-to-csv" class="tool-chip">JSON to CSV Table</a>
+                            <a routerLink="/json-repair" class="tool-chip">JSON Repair &amp; Fixer</a>
+                            <a routerLink="/markdown" class="tool-chip">Markdown Live Viewer</a>
+                        </div>
                     </div>
 
                     <div class="faq-container">

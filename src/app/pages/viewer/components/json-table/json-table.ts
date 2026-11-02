@@ -10,6 +10,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { JsonNode } from '../../../../core/interfaces';
+import { CodeGeneratorService } from '../../../../core/services/code-generator/code-generator.service';
 import { JsonParserService } from '../../../../core/services/json-parser/json-parser.service';
 
 @Component({
@@ -31,6 +32,7 @@ import { JsonParserService } from '../../../../core/services/json-parser/json-pa
 })
 export class JsonTableComponent {
     private readonly parserService = inject(JsonParserService);
+    private readonly generatorService = inject(CodeGeneratorService);
     private readonly snackBar = inject(MatSnackBar);
     private readonly router = inject(Router);
 
@@ -52,6 +54,14 @@ export class JsonTableComponent {
     });
 
     readonly activeArrayNode = computed(() => this.activeArrayEntry()?.node ?? this.data());
+
+    readonly tokenSavings = computed(() => {
+        const node = this.activeArrayNode();
+        const md = this.parserService.nodeArrayToMarkdownTable(node);
+        if (!md) return null;
+        const jsonStr = this.parserService.stringify(node);
+        return this.generatorService.calculateTokenSavings(jsonStr, md);
+    });
 
     readonly columns = computed(() => {
         const root = this.activeArrayNode();

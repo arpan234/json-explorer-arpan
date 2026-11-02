@@ -34,7 +34,7 @@
     <textarea
         class="json-textarea"
         [ngModel]="inputText()"
-        (ngModelChange)="inputText.set($event)"
+        (ngModelChange)="onTextChange($event)"
         (paste)="onPaste($event)"
         placeholder="Paste your JSON here..."
         spellcheck="false"

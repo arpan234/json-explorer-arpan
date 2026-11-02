@@ -13,6 +13,16 @@
         </mat-button-toggle-group>
 
         <div class="codegen-actions">
+            @if (tokenSavings(); as stats) {
+                @if (stats.savedPercent > 0) {
+                    <span
+                        class="token-saver-badge"
+                        matTooltip="Converting JSON to Markdown reduces LLM prompt token count for ChatGPT, Claude & Gemini"
+                    >
+                        ⚡ {{ stats.jsonTokens }} → {{ stats.mdTokens }} tokens (-{{ stats.savedPercent }}%)
+                    </span>
+                }
+            }
             @if (selectedLanguage() === 'markdown') {
                 <button
                     mat-stroked-button

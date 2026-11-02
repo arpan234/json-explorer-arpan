@@ -104,5 +104,14 @@ describe('CodeGeneratorService', () => {
             expect(md).toContain('| 1 | Alice |  |');
             expect(md).toContain('| 2 | Bob | bob@example.com |');
         });
+
+        it('should calculate positive LLM token savings when converting JSON to Markdown', () => {
+            const jsonStr = JSON.stringify(testObject.users, null, 2);
+            const mdStr = service.generate(testObject.users, 'markdown');
+            const stats = service.calculateTokenSavings(jsonStr, mdStr);
+            expect(stats).toBeTruthy();
+            expect(stats!.jsonTokens).toBeGreaterThan(stats!.mdTokens);
+            expect(stats!.savedPercent).toBeGreaterThan(0);
+        });
     });
 });

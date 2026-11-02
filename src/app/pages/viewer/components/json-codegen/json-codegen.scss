@@ -63,6 +63,18 @@
         gap: 8px;
     }
 
+    .token-saver-badge {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: var(--mat-sys-primary);
+        background: rgba(0, 240, 255, 0.08);
+        border: 1px solid rgba(0, 240, 255, 0.25);
+        padding: 4px 10px;
+        border-radius: 12px;
+        white-space: nowrap;
+    }
+
     .open-md-btn {
         height: 32px;
         font-family: 'Plus Jakarta Sans', sans-serif;

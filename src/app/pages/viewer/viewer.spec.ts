@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
+import { provideRouter } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ViewerComponent } from './viewer';
 
@@ -11,7 +12,11 @@ describe('ViewerComponent', () => {
 
         await TestBed.configureTestingModule({
             imports: [ViewerComponent],
-            providers: [provideAnimationsAsync(), { provide: MatSnackBar, useValue: snackBarSpy }],
+            providers: [
+                provideAnimationsAsync(),
+                provideRouter([]),
+                { provide: MatSnackBar, useValue: snackBarSpy },
+            ],
         }).compileComponents();
     });
 

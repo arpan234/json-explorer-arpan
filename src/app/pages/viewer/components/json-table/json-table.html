@@ -14,6 +14,16 @@
             } @else if (activeArrayEntry(); as entry) {
                 <span class="dataset-badge">{{ entry.label }}</span>
             }
+            @if (tokenSavings(); as stats) {
+                @if (stats.savedPercent > 0) {
+                    <span
+                        class="dataset-badge token-badge"
+                        matTooltip="Copying as a Markdown table saves LLM prompt tokens compared to raw JSON"
+                    >
+                        ⚡ -{{ stats.savedPercent }}% LLM tokens ({{ stats.jsonTokens }} → {{ stats.mdTokens }})
+                    </span>
+                }
+            }
         </div>
 
         <div class="table-toolbar__right">

@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    Component,
+    computed,
+    effect,
+    inject,
+    input,
+    signal,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -34,8 +42,18 @@ export class JsonCodegenComponent {
     private readonly snackBar = inject(MatSnackBar);
 
     readonly rawJson = input.required<string>();
+    readonly initialLanguage = input<CodeLang>('markdown');
 
     readonly selectedLanguage = signal<CodeLang>('markdown');
+
+    constructor() {
+        effect(() => {
+            const initLang = this.initialLanguage();
+            if (initLang) {
+                this.selectedLanguage.set(initLang);
+            }
+        });
+    }
 
     readonly generatedCode = computed(() => {
         const raw = this.rawJson();
@@ -46,6 +64,11 @@ export class JsonCodegenComponent {
         } catch (e) {
             return `Error generating code: ${(e as Error).message}`;
         }
+    });
+
+    readonly tokenSavings = computed(() => {
+        if (this.selectedLanguage() !== 'markdown') return null;
+        return this.generatorService.calculateTokenSavings(this.rawJson(), this.generatedCode());
     });
 
     readonly editorOptions = computed(() => ({

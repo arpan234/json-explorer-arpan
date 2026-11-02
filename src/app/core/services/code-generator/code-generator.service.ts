@@ -13,6 +13,29 @@ interface Schema {
 
 @Injectable({ providedIn: 'root' })
 export class CodeGeneratorService {
+    /**
+     * Estimates LLM token counts (using standard BPE ~3.5-4 chars/punctuation heuristic)
+     * and calculates token reduction percentage when converting JSON to Markdown.
+     */
+    calculateTokenSavings(
+        jsonText: string,
+        markdownText: string,
+    ): { jsonTokens: number; mdTokens: number; savedPercent: number } | null {
+        if (!jsonText.trim() || !markdownText.trim()) return null;
+
+        const estimateTokens = (text: string): number => {
+            const tokens = text.match(/[a-zA-Z0-9_]+|[^\s\w]/g);
+            return tokens ? tokens.length : Math.ceil(text.length / 4);
+        };
+
+        const jsonTokens = estimateTokens(jsonText);
+        const mdTokens = estimateTokens(markdownText);
+        if (jsonTokens <= 0) return null;
+
+        const savedPercent = Math.round(((jsonTokens - mdTokens) / jsonTokens) * 100);
+        return { jsonTokens, mdTokens, savedPercent };
+    }
+
     generate(value: unknown, lang: CodeLang): string {
         if (value === undefined) return '';
 

@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { provideMarkdown } from 'ngx-markdown';
 import { MarkdownViewerComponent } from './markdown-viewer';
 
@@ -6,7 +7,7 @@ describe('MarkdownViewerComponent', () => {
     beforeEach(async () => {
         await TestBed.configureTestingModule({
             imports: [MarkdownViewerComponent],
-            providers: [provideMarkdown()],
+            providers: [provideMarkdown(), provideRouter([])],
         }).compileComponents();
     });
 
