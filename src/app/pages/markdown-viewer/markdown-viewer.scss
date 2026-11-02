@@ -3,10 +3,17 @@
     min-width: 0;
 }
 
+.tool-shell {
+    display: flex;
+    flex-direction: column;
+    height: calc(100svh - 64px);
+    min-height: 480px;
+}
+
 .viewer-container {
     display: flex;
-    height: min(76svh, 850px);
-    min-height: 540px;
+    flex: 1;
+    min-height: 0;
 
     &.mobile-view {
         flex-direction: column;
@@ -165,8 +172,7 @@
 @media (max-width: 768px) {
     .viewer-container {
         flex-direction: column;
-        height: 72svh;
-        min-height: 520px;
+        min-height: 0;
     }
     .mobile-nav-bar {
         display: flex;

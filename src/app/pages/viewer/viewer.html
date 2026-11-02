@@ -1,226 +1,318 @@
-<app-tool-guide part="intro" />
-<div class="viewer-container" [class.mobile-view]="isMobile()">
-    <div class="mobile-nav-bar">
-        <button
-            mat-button
-            class="mobile-nav-btn"
-            [class.active]="activeMobileTab() === 'input'"
-            (click)="activeMobileTab.set('input')"
+<div class="tool-shell">
+    <app-tool-guide part="intro" />
+    <div class="viewer-container" [class.mobile-view]="isMobile()">
+        <div class="mobile-nav-bar">
+            <button
+                mat-button
+                class="mobile-nav-btn"
+                [class.active]="activeMobileTab() === 'input'"
+                (click)="activeMobileTab.set('input')"
+            >
+                <mat-icon>edit</mat-icon>
+                Input
+            </button>
+            <button
+                mat-button
+                class="mobile-nav-btn"
+                [class.active]="activeMobileTab() === 'output'"
+                (click)="activeMobileTab.set('output')"
+            >
+                <mat-icon>visibility</mat-icon>
+                {{ hasData() ? 'Viewer' : 'Welcome' }}
+            </button>
+        </div>
+
+        <!-- Left Panel: Input -->
+        <div
+            class="input-panel"
+            [class.mobile-inactive]="activeMobileTab() !== 'input'"
+            [style.width.%]="isMobile() ? 100 : panelWidth()"
         >
-            <mat-icon>edit</mat-icon>
-            Input
-        </button>
-        <button
-            mat-button
-            class="mobile-nav-btn"
-            [class.active]="activeMobileTab() === 'output'"
-            (click)="activeMobileTab.set('output')"
-        >
-            <mat-icon>visibility</mat-icon>
-            {{ hasData() ? 'Viewer' : 'Welcome' }}
-        </button>
-    </div>
+            <app-json-input [externalJson]="rawJson()" (jsonParsed)="onJsonInput($event)" />
+        </div>
 
-    <!-- Left Panel: Input -->
-    <div
-        class="input-panel"
-        [class.mobile-inactive]="activeMobileTab() !== 'input'"
-        [style.width.%]="isMobile() ? 100 : panelWidth()"
-    >
-        <app-json-input [externalJson]="rawJson()" (jsonParsed)="onJsonInput($event)" />
-    </div>
+        <!-- Resize Handle -->
+        <div
+            class="resize-handle"
+            role="separator"
+            tabindex="0"
+            aria-label="Resize editor panels"
+            aria-orientation="vertical"
+            aria-valuemin="20"
+            aria-valuemax="65"
+            [attr.aria-valuenow]="panelWidth()"
+            (keydown.arrowleft)="panelWidth.set(panelWidth() > 20 ? panelWidth() - 5 : 20)"
+            (keydown.arrowright)="panelWidth.set(panelWidth() < 65 ? panelWidth() + 5 : 65)"
+            (mousedown)="onResizeStart($event)"
+        ></div>
 
-    <!-- Resize Handle -->
-    <div
-        class="resize-handle"
-        role="separator"
-        tabindex="0"
-        aria-label="Resize editor panels"
-        aria-orientation="vertical"
-        aria-valuemin="20"
-        aria-valuemax="65"
-        [attr.aria-valuenow]="panelWidth()"
-        (keydown.arrowleft)="panelWidth.set(panelWidth() > 20 ? panelWidth() - 5 : 20)"
-        (keydown.arrowright)="panelWidth.set(panelWidth() < 65 ? panelWidth() + 5 : 65)"
-        (mousedown)="onResizeStart($event)"
-    ></div>
-
-    <!-- Right Panel: Output -->
-    <div class="output-panel" [class.mobile-inactive]="activeMobileTab() !== 'output'">
-        @if (hasData()) {
-            <!-- Action Bar -->
-            <div class="action-bar">
-                <div class="action-bar__left">
-                    <app-breadcrumbs [path]="selectedPath()" />
-                    @if (selectedPath().length > 1) {
+        <!-- Right Panel: Output -->
+        <div class="output-panel" [class.mobile-inactive]="activeMobileTab() !== 'output'">
+            @if (hasData()) {
+                <!-- Action Bar -->
+                <div class="action-bar">
+                    <div class="action-bar__left">
+                        <app-breadcrumbs [path]="selectedPath()" />
+                        @if (selectedPath().length > 1) {
+                            <button
+                                aria-label="Copy JSON path"
+                                mat-icon-button
+                                class="copy-path-btn"
+                                (click)="copyPath()"
+                                matTooltip="Copy JSON path"
+                            >
+                                <mat-icon>content_copy</mat-icon>
+                            </button>
+                        }
+                        @if (nodeStats(); as stats) {
+                            <span class="node-stats"
+                                >{{ stats.totalKeys }} keys · {{ stats.maxDepth }} levels</span
+                            >
+                        }
+                    </div>
+                    <div class="action-bar__right">
                         <button
-                            aria-label="Copy JSON path"
+                            aria-label="Expand all"
                             mat-icon-button
-                            class="copy-path-btn"
-                            (click)="copyPath()"
-                            matTooltip="Copy JSON path"
+                            (click)="expandAll()"
+                            matTooltip="Expand all"
+                        >
+                            <mat-icon>unfold_more</mat-icon>
+                        </button>
+                        <button
+                            aria-label="Collapse all"
+                            mat-icon-button
+                            (click)="collapseAll()"
+                            matTooltip="Collapse all"
+                        >
+                            <mat-icon>unfold_less</mat-icon>
+                        </button>
+                        <button
+                            aria-label="Search (Ctrl+F)"
+                            mat-icon-button
+                            (click)="showSearch.set(!showSearch())"
+                            matTooltip="Search (Ctrl+F)"
+                        >
+                            <mat-icon>search</mat-icon>
+                        </button>
+                        <button
+                            aria-label="Format (Ctrl+Shift+F)"
+                            mat-icon-button
+                            (click)="formatJson()"
+                            matTooltip="Format (Ctrl+Shift+F)"
+                        >
+                            <mat-icon>format_align_left</mat-icon>
+                        </button>
+                        <button
+                            aria-label="Copy shareable link"
+                            mat-icon-button
+                            (click)="shareJson()"
+                            matTooltip="Copy shareable link"
+                        >
+                            <mat-icon>share</mat-icon>
+                        </button>
+                        <button
+                            aria-label="Copy to clipboard"
+                            mat-icon-button
+                            (click)="copyToClipboard()"
+                            matTooltip="Copy to clipboard"
                         >
                             <mat-icon>content_copy</mat-icon>
                         </button>
-                    }
-                    @if (nodeStats(); as stats) {
-                        <span class="node-stats"
-                            >{{ stats.totalKeys }} keys · {{ stats.maxDepth }} levels</span
+                        <button
+                            aria-label="Download JSON"
+                            mat-icon-button
+                            (click)="downloadJson()"
+                            matTooltip="Download JSON"
                         >
-                    }
+                            <mat-icon>download</mat-icon>
+                        </button>
+                    </div>
                 </div>
-                <div class="action-bar__right">
-                    <button
-                        aria-label="Expand all"
-                        mat-icon-button
-                        (click)="expandAll()"
-                        matTooltip="Expand all"
-                    >
-                        <mat-icon>unfold_more</mat-icon>
-                    </button>
-                    <button
-                        aria-label="Collapse all"
-                        mat-icon-button
-                        (click)="collapseAll()"
-                        matTooltip="Collapse all"
-                    >
-                        <mat-icon>unfold_less</mat-icon>
-                    </button>
-                    <button
-                        aria-label="Search (Ctrl+F)"
-                        mat-icon-button
-                        (click)="showSearch.set(!showSearch())"
-                        matTooltip="Search (Ctrl+F)"
-                    >
-                        <mat-icon>search</mat-icon>
-                    </button>
-                    <button
-                        aria-label="Format (Ctrl+Shift+F)"
-                        mat-icon-button
-                        (click)="formatJson()"
-                        matTooltip="Format (Ctrl+Shift+F)"
-                    >
-                        <mat-icon>format_align_left</mat-icon>
-                    </button>
-                    <button
-                        aria-label="Copy shareable link"
-                        mat-icon-button
-                        (click)="shareJson()"
-                        matTooltip="Copy shareable link"
-                    >
-                        <mat-icon>share</mat-icon>
-                    </button>
-                    <button
-                        aria-label="Copy to clipboard"
-                        mat-icon-button
-                        (click)="copyToClipboard()"
-                        matTooltip="Copy to clipboard"
-                    >
-                        <mat-icon>content_copy</mat-icon>
-                    </button>
-                    <button
-                        aria-label="Download JSON"
-                        mat-icon-button
-                        (click)="downloadJson()"
-                        matTooltip="Download JSON"
-                    >
-                        <mat-icon>download</mat-icon>
-                    </button>
-                </div>
-            </div>
 
-            <!-- Search Bar -->
-            @if (showSearch()) {
-                <div class="search-bar">
-                    <div class="search-bar-row">
-                        <mat-form-field appearance="outline" class="search-field">
-                            <mat-icon matPrefix>search</mat-icon>
-                            <input
-                                matInput
-                                placeholder="Search keys and values..."
-                                [ngModel]="searchQuery()"
-                                (ngModelChange)="searchQuery.set($event)"
-                                (keydown.enter)="onSearchEnter($event)"
-                            />
-                            @if (searchQuery()) {
-                                <span matSuffix class="match-count">
-                                    @if (directMatches().length > 0) {
-                                        {{ activeMatchIndex() + 1 }} of {{ directMatches().length }}
-                                    } @else {
-                                        0 matches
-                                    }
-                                </span>
-                            }
-                        </mat-form-field>
+                <!-- Search Bar -->
+                @if (showSearch()) {
+                    <div class="search-bar">
+                        <div class="search-bar-row">
+                            <mat-form-field appearance="outline" class="search-field">
+                                <mat-icon matPrefix>search</mat-icon>
+                                <input
+                                    matInput
+                                    placeholder="Search keys and values..."
+                                    [ngModel]="searchQuery()"
+                                    (ngModelChange)="searchQuery.set($event)"
+                                    (keydown.enter)="onSearchEnter($event)"
+                                />
+                                @if (searchQuery()) {
+                                    <span matSuffix class="match-count">
+                                        @if (directMatches().length > 0) {
+                                            {{ activeMatchIndex() + 1 }} of
+                                            {{ directMatches().length }}
+                                        } @else {
+                                            0 matches
+                                        }
+                                    </span>
+                                }
+                            </mat-form-field>
 
-                        <div class="search-actions">
-                            <button
-                                aria-label="Match Case (Aa)"
-                                type="button"
-                                class="search-option-btn"
-                                [class.active]="searchCaseSensitive()"
-                                (click)="searchCaseSensitive.set(!searchCaseSensitive())"
-                                matTooltip="Match Case (Aa)"
-                                matTooltipPosition="above"
-                            >
-                                Aa
-                            </button>
-                            <button
-                                aria-label="Use Regular Expression (.*)"
-                                type="button"
-                                class="search-option-btn"
-                                [class.active]="searchRegex()"
-                                (click)="searchRegex.set(!searchRegex())"
-                                matTooltip="Use Regular Expression (.*)"
-                                matTooltipPosition="above"
-                            >
-                                .*
-                            </button>
-                            <div class="search-divider"></div>
-                            <button
-                                aria-label="Search Keys"
-                                type="button"
-                                class="search-option-btn"
-                                [class.active]="searchKeys()"
-                                (click)="searchKeys.set(!searchKeys())"
-                                matTooltip="Search Keys"
-                                matTooltipPosition="above"
-                            >
-                                Keys
-                            </button>
-                            <button
-                                aria-label="Search Values"
-                                type="button"
-                                class="search-option-btn"
-                                [class.active]="searchValues()"
-                                (click)="searchValues.set(!searchValues())"
-                                matTooltip="Search Values"
-                                matTooltipPosition="above"
-                            >
-                                Values
-                            </button>
-
-                            @if (searchQuery() && directMatches().length > 0) {
-                                <div class="search-divider"></div>
+                            <div class="search-actions">
                                 <button
-                                    aria-label="Previous Match (Shift+Enter)"
+                                    aria-label="Match Case (Aa)"
                                     type="button"
-                                    class="nav-arrow-btn"
-                                    (click)="prevMatch()"
-                                    matTooltip="Previous Match (Shift+Enter)"
+                                    class="search-option-btn"
+                                    [class.active]="searchCaseSensitive()"
+                                    (click)="searchCaseSensitive.set(!searchCaseSensitive())"
+                                    matTooltip="Match Case (Aa)"
                                     matTooltipPosition="above"
                                 >
-                                    <mat-icon>arrow_upward</mat-icon>
+                                    Aa
                                 </button>
                                 <button
-                                    aria-label="Next Match (Enter)"
+                                    aria-label="Use Regular Expression (.*)"
                                     type="button"
-                                    class="nav-arrow-btn"
-                                    (click)="nextMatch()"
-                                    matTooltip="Next Match (Enter)"
+                                    class="search-option-btn"
+                                    [class.active]="searchRegex()"
+                                    (click)="searchRegex.set(!searchRegex())"
+                                    matTooltip="Use Regular Expression (.*)"
                                     matTooltipPosition="above"
                                 >
-                                    <mat-icon>arrow_downward</mat-icon>
+                                    .*
+                                </button>
+                                <div class="search-divider"></div>
+                                <button
+                                    aria-label="Search Keys"
+                                    type="button"
+                                    class="search-option-btn"
+                                    [class.active]="searchKeys()"
+                                    (click)="searchKeys.set(!searchKeys())"
+                                    matTooltip="Search Keys"
+                                    matTooltipPosition="above"
+                                >
+                                    Keys
+                                </button>
+                                <button
+                                    aria-label="Search Values"
+                                    type="button"
+                                    class="search-option-btn"
+                                    [class.active]="searchValues()"
+                                    (click)="searchValues.set(!searchValues())"
+                                    matTooltip="Search Values"
+                                    matTooltipPosition="above"
+                                >
+                                    Values
+                                </button>
+
+                                @if (searchQuery() && directMatches().length > 0) {
+                                    <div class="search-divider"></div>
+                                    <button
+                                        aria-label="Previous Match (Shift+Enter)"
+                                        type="button"
+                                        class="nav-arrow-btn"
+                                        (click)="prevMatch()"
+                                        matTooltip="Previous Match (Shift+Enter)"
+                                        matTooltipPosition="above"
+                                    >
+                                        <mat-icon>arrow_upward</mat-icon>
+                                    </button>
+                                    <button
+                                        aria-label="Next Match (Enter)"
+                                        type="button"
+                                        class="nav-arrow-btn"
+                                        (click)="nextMatch()"
+                                        matTooltip="Next Match (Enter)"
+                                        matTooltipPosition="above"
+                                    >
+                                        <mat-icon>arrow_downward</mat-icon>
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                <!-- View Tabs -->
+                <mat-tab-group
+                    [selectedIndex]="selectedTabIndex"
+                    (selectedIndexChange)="onTabChange($event)"
+                    class="view-tabs"
+                >
+                    <mat-tab label="Raw">
+                        @defer (when viewMode() === 'raw') {
+                            <app-raw-editor
+                                [json]="rawJson()"
+                                (jsonChange)="onRawEditorChange($event)"
+                            />
+                        }
+                    </mat-tab>
+
+                    <mat-tab label="Tree">
+                        @if (rootNode(); as root) {
+                            <div class="tree-container">
+                                <app-json-tree-node
+                                    [node]="root"
+                                    [searchQuery]="searchQuery()"
+                                    [searchCaseSensitive]="searchCaseSensitive()"
+                                    [searchRegex]="searchRegex()"
+                                    [searchKeys]="searchKeys()"
+                                    [searchValues]="searchValues()"
+                                    [expandedPaths]="expandedPaths()"
+                                    [activeMatchPath]="activeMatchPath()"
+                                    [expandAllTrigger]="expandAllTrigger()"
+                                    [collapseAllTrigger]="collapseAllTrigger()"
+                                    (pathSelected)="onPathSelected($event)"
+                                    (nodeEdited)="onNodeEdit($event)"
+                                />
+                            </div>
+                        }
+                    </mat-tab>
+
+                    <mat-tab label="Table" [disabled]="!isTableCompatible()">
+                        @defer (when viewMode() === 'table') {
+                            @if (rootNode(); as root) {
+                                <app-json-table [data]="root" />
+                            }
+                        }
+                    </mat-tab>
+
+                    <mat-tab label="Chart" [disabled]="!isChartCompatible()">
+                        @defer (when viewMode() === 'chart') {
+                            @if (rootNode(); as root) {
+                                <app-json-chart [data]="root" />
+                            }
+                        }
+                    </mat-tab>
+
+                    <mat-tab label="Code Gen">
+                        @defer (when viewMode() === 'codegen') {
+                            <app-json-codegen
+                                [rawJson]="rawJson()"
+                                [initialLanguage]="defaultCodeLang()"
+                            />
+                        }
+                    </mat-tab>
+                </mat-tab-group>
+            } @else {
+                <div class="welcome-container">
+                    <div class="empty-state">
+                        <mat-icon class="empty-icon">data_object</mat-icon>
+                        <h2>No JSON loaded</h2>
+                        <p>
+                            Paste JSON in the input panel, drop a .json file, or try sample data
+                            below.
+                        </p>
+                        <div class="empty-cta-group">
+                            <button mat-flat-button (click)="loadSampleFromWelcome()">
+                                <mat-icon>science</mat-icon>
+                                Load Sample JSON
+                            </button>
+                            <button mat-stroked-button (click)="pasteFromClipboard()">
+                                <mat-icon>content_paste</mat-icon>
+                                Paste from Clipboard
+                            </button>
+                            @if (savedSessionJson()) {
+                                <button mat-stroked-button (click)="restoreSavedSession()">
+                                    <mat-icon>history</mat-icon>
+                                    Restore Last Session
                                 </button>
                             }
                         </div>
@@ -228,102 +320,13 @@
                 </div>
             }
 
-            <!-- View Tabs -->
-            <mat-tab-group
-                [selectedIndex]="selectedTabIndex"
-                (selectedIndexChange)="onTabChange($event)"
-                class="view-tabs"
-            >
-                <mat-tab label="Raw">
-                    @defer (when viewMode() === 'raw') {
-                        <app-raw-editor
-                            [json]="rawJson()"
-                            (jsonChange)="onRawEditorChange($event)"
-                        />
-                    }
-                </mat-tab>
-
-                <mat-tab label="Tree">
-                    @if (rootNode(); as root) {
-                        <div class="tree-container">
-                            <app-json-tree-node
-                                [node]="root"
-                                [searchQuery]="searchQuery()"
-                                [searchCaseSensitive]="searchCaseSensitive()"
-                                [searchRegex]="searchRegex()"
-                                [searchKeys]="searchKeys()"
-                                [searchValues]="searchValues()"
-                                [expandedPaths]="expandedPaths()"
-                                [activeMatchPath]="activeMatchPath()"
-                                [expandAllTrigger]="expandAllTrigger()"
-                                [collapseAllTrigger]="collapseAllTrigger()"
-                                (pathSelected)="onPathSelected($event)"
-                                (nodeEdited)="onNodeEdit($event)"
-                            />
-                        </div>
-                    }
-                </mat-tab>
-
-                <mat-tab label="Table" [disabled]="!isTableCompatible()">
-                    @defer (when viewMode() === 'table') {
-                        @if (rootNode(); as root) {
-                            <app-json-table [data]="root" />
-                        }
-                    }
-                </mat-tab>
-
-                <mat-tab label="Chart" [disabled]="!isChartCompatible()">
-                    @defer (when viewMode() === 'chart') {
-                        @if (rootNode(); as root) {
-                            <app-json-chart [data]="root" />
-                        }
-                    }
-                </mat-tab>
-
-                <mat-tab label="Code Gen">
-                    @defer (when viewMode() === 'codegen') {
-                        <app-json-codegen
-                            [rawJson]="rawJson()"
-                            [initialLanguage]="defaultCodeLang()"
-                        />
-                    }
-                </mat-tab>
-            </mat-tab-group>
-        } @else {
-            <div class="welcome-container">
-                <div class="empty-state">
-                    <mat-icon class="empty-icon">data_object</mat-icon>
-                    <h2>No JSON loaded</h2>
-                    <p>
-                        Paste JSON in the input panel, drop a .json file, or try sample data below.
-                    </p>
-                    <div class="empty-cta-group">
-                        <button mat-flat-button (click)="loadSampleFromWelcome()">
-                            <mat-icon>science</mat-icon>
-                            Load Sample JSON
-                        </button>
-                        <button mat-stroked-button (click)="pasteFromClipboard()">
-                            <mat-icon>content_paste</mat-icon>
-                            Paste from Clipboard
-                        </button>
-                        @if (savedSessionJson()) {
-                            <button mat-stroked-button (click)="restoreSavedSession()">
-                                <mat-icon>history</mat-icon>
-                                Restore Last Session
-                            </button>
-                        }
-                    </div>
+            @if (parseError(); as error) {
+                <div class="error-banner">
+                    <mat-icon>error_outline</mat-icon>
+                    <span>{{ error }}</span>
                 </div>
-            </div>
-        }
-
-        @if (parseError(); as error) {
-            <div class="error-banner">
-                <mat-icon>error_outline</mat-icon>
-                <span>{{ error }}</span>
-            </div>
-        }
+            }
+        </div>
     </div>
 </div>
-
 <app-tool-guide part="guide" />

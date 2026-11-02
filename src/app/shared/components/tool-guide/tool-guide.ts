@@ -123,14 +123,11 @@ const GUIDES: Record<string, Guide> = {
     template: ` @if (part() === 'intro') {
             <header class="tool-intro">
                 <h1>{{ heading }}</h1>
-                <p>{{ description }}</p>
-                <p class="privacy-note">
-                    Free · No account required · Files processed in your browser ·
-                    <a routerLink="/privacy">Privacy and saved drafts</a>
-                </p>
+                <a class="privacy-note" routerLink="/privacy">Local processing · Privacy</a>
             </header>
         } @else {
             <section class="tool-guide" aria-label="Tool instructions and examples">
+                <p>{{ description }}</p>
                 <h2>How to use {{ heading }}</h2>
                 <ol>
                     @for (step of guide.steps; track step) {
@@ -175,23 +172,29 @@ const GUIDES: Record<string, Guide> = {
             :host {
                 display: block;
             }
-            .tool-intro,
+            .tool-intro {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                flex-wrap: wrap;
+                gap: 4px 20px;
+                padding: 10px 20px;
+                border-bottom: 1px solid var(--mat-sys-outline-variant);
+            }
+            .tool-intro h1 {
+                font-size: 1.05rem;
+                margin: 0;
+                line-height: 1.4;
+                font-weight: 600;
+            }
+            .privacy-note {
+                font-size: 0.75rem;
+                white-space: nowrap;
+            }
             .tool-guide {
                 max-width: 1100px;
                 margin: auto;
                 padding: 24px;
-            }
-            .tool-intro h1 {
-                font-size: clamp(1.4rem, 3vw, 2rem);
-                margin: 0 0 10px;
-                line-height: 1.25;
-            }
-            .tool-intro p {
-                margin: 8px 0;
-                line-height: 1.6;
-            }
-            .privacy-note {
-                font-size: 0.85rem;
             }
             .tool-guide {
                 line-height: 1.7;
@@ -231,7 +234,13 @@ const GUIDES: Record<string, Guide> = {
                 .examples {
                     grid-template-columns: 1fr;
                 }
-                .tool-intro,
+                .tool-intro {
+                    padding: 8px 12px;
+                    gap: 2px 12px;
+                }
+                .tool-intro h1 {
+                    font-size: 0.95rem;
+                }
                 .tool-guide {
                     padding: 20px 16px;
                 }
