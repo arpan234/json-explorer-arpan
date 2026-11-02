@@ -1,8 +1,49 @@
 <div class="preview-container">
     <div class="preview-header">
         <span class="preview-title">Preview</span>
+        <div class="preview-actions">
+            @if (extractedTables().length > 0) {
+                <button
+                    mat-flat-button
+                    class="extract-json-btn"
+                    (click)="extractTablesToJson()"
+                    matTooltip="Convert Markdown table(s) into JSON and open in JSON Viewer"
+                >
+                    <mat-icon>data_object</mat-icon>
+                    Extract Table to JSON
+                </button>
+            }
+            <button
+                mat-icon-button
+                (click)="shareMarkdown()"
+                matTooltip="Copy shareable link"
+            >
+                <mat-icon>share</mat-icon>
+            </button>
+            <button
+                mat-icon-button
+                (click)="copyHtml()"
+                matTooltip="Copy rendered HTML"
+            >
+                <mat-icon>html</mat-icon>
+            </button>
+            <button
+                mat-icon-button
+                (click)="copyMarkdown()"
+                matTooltip="Copy Markdown"
+            >
+                <mat-icon>content_copy</mat-icon>
+            </button>
+            <button
+                mat-icon-button
+                (click)="downloadMarkdown()"
+                matTooltip="Download .md file"
+            >
+                <mat-icon>download</mat-icon>
+            </button>
+        </div>
     </div>
-    <div class="preview-content">
+    <div class="preview-content" #previewBody>
         <markdown [data]="content()" />
     </div>
 </div>

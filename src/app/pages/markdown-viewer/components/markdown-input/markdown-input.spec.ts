@@ -89,4 +89,28 @@ describe('MarkdownInputComponent', () => {
             expect(component.isDragOver()).toBe(false);
         });
     });
+
+    describe('formatting & stats', () => {
+        it('should compute document stats accurately', () => {
+            const fixture = TestBed.createComponent(MarkdownInputComponent);
+            const component = fixture.componentInstance;
+
+            component.inputText.set('Hello world\nSecond line');
+            const stats = component.docStats();
+            expect(stats.words).toBe(4);
+            expect(stats.lines).toBe(2);
+            expect(stats.readingTimeMin).toBe(1);
+        });
+
+        it('should format and align Markdown tables', () => {
+            const fixture = TestBed.createComponent(MarkdownInputComponent);
+            const component = fixture.componentInstance;
+
+            component.inputText.set('| Name | Score |\n|---|---|\n| Alice | 95 |');
+            component.formatMarkdownTables();
+            expect(component.inputText()).toContain('| Name  | Score |');
+            expect(component.inputText()).toContain('| ----- | ----- |');
+            expect(component.inputText()).toContain('| Alice | 95    |');
+        });
+    });
 });

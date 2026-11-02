@@ -25,7 +25,7 @@
     <!-- Left Panel: Input -->
     @if (!isMobile() || activeMobileTab() === 'input') {
         <div class="input-panel" [style.width.%]="isMobile() ? 100 : panelWidth()">
-            <app-json-input (jsonParsed)="onJsonInput($event)" />
+            <app-json-input [externalJson]="rawJson()" (jsonParsed)="onJsonInput($event)" />
         </div>
     }
 
@@ -78,6 +78,13 @@
                         matTooltip="Format (Ctrl+Shift+F)"
                     >
                         <mat-icon>format_align_left</mat-icon>
+                    </button>
+                    <button
+                        mat-icon-button
+                        (click)="shareJson()"
+                        matTooltip="Copy shareable link"
+                    >
+                        <mat-icon>share</mat-icon>
                     </button>
                     <button
                         mat-icon-button

@@ -1,27 +1,60 @@
-import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
+import { Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { MatTableModule } from '@angular/material/table';
 import { MatSortModule, Sort } from '@angular/material/sort';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+import { MatButtonModule } from '@angular/material/button';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { JsonNode } from '../../../../core/interfaces';
+import { JsonParserService } from '../../../../core/services/json-parser/json-parser.service';
 
 @Component({
     selector: 'app-json-table',
     standalone: true,
-    imports: [MatTableModule, MatSortModule, MatPaginatorModule],
+    imports: [
+        FormsModule,
+        MatTableModule,
+        MatSortModule,
+        MatPaginatorModule,
+        MatButtonModule,
+        MatButtonToggleModule,
+        MatIconModule,
+        MatTooltipModule,
+    ],
     templateUrl: './json-table.html',
     styleUrl: './json-table.scss',
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class JsonTableComponent {
+    private readonly parserService = inject(JsonParserService);
+    private readonly snackBar = inject(MatSnackBar);
+    private readonly router = inject(Router);
+
     readonly data = input.required<JsonNode>();
 
+    readonly selectedArrayPath = signal('');
     readonly pageIndex = signal(0);
     readonly pageSize = signal(25);
     readonly sortColumn = signal('');
     readonly sortDirection = signal<'asc' | 'desc' | ''>('');
 
+    readonly availableArrays = computed(() => this.parserService.findTableArrays(this.data()));
+
+    readonly activeArrayEntry = computed(() => {
+        const list = this.availableArrays();
+        if (list.length === 0) return null;
+        const selected = this.selectedArrayPath();
+        return list.find((item) => item.path === selected) ?? list[0];
+    });
+
+    readonly activeArrayNode = computed(() => this.activeArrayEntry()?.node ?? this.data());
+
     readonly columns = computed(() => {
-        const root = this.data();
+        const root = this.activeArrayNode();
         if (root.type !== 'array' || !root.children?.length) return [];
 
         const keys = new Set<string>();
@@ -36,7 +69,7 @@ export class JsonTableComponent {
     });
 
     readonly rows = computed(() => {
-        const root = this.data();
+        const root = this.activeArrayNode();
         if (root.type !== 'array' || !root.children) return [];
 
         let items = root.children.map((child) => {
@@ -71,9 +104,16 @@ export class JsonTableComponent {
     });
 
     readonly totalRows = computed(() => {
-        const root = this.data();
+        const root = this.activeArrayNode();
         return root.children?.length ?? 0;
     });
+
+    onArrayPathChange(path: string): void {
+        this.selectedArrayPath.set(path);
+        this.pageIndex.set(0);
+        this.sortColumn.set('');
+        this.sortDirection.set('');
+    }
 
     onSortChange(sort: Sort): void {
         this.sortColumn.set(sort.active);
@@ -89,5 +129,30 @@ export class JsonTableComponent {
         if (value === null) return 'null';
         if (typeof value === 'object') return JSON.stringify(value);
         return String(value);
+    }
+
+    copyAsMarkdown(): void {
+        const md = this.parserService.nodeArrayToMarkdownTable(this.activeArrayNode());
+        if (md) {
+            navigator.clipboard.writeText(md);
+            this.snackBar.open('Copied as Markdown Table', '', { duration: 2000 });
+        }
+    }
+
+    copyAsCsv(): void {
+        const csv = this.parserService.nodeArrayToCsv(this.activeArrayNode());
+        if (csv) {
+            navigator.clipboard.writeText(csv);
+            this.snackBar.open('Copied as CSV', '', { duration: 2000 });
+        }
+    }
+
+    openInMarkdownReader(): void {
+        const entry = this.activeArrayEntry();
+        const mdTable = this.parserService.nodeArrayToMarkdownTable(this.activeArrayNode());
+        if (!mdTable) return;
+        const title = entry && entry.path !== '$' ? `# ${entry.path}\n\n` : `# JSON Data Table\n\n`;
+        this.parserService.pendingMarkdownTransfer.set(`${title}${mdTable}`);
+        this.router.navigate(['/markdown']);
     }
 }

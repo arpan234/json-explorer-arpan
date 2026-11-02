@@ -93,4 +93,16 @@ describe('CodeGeneratorService', () => {
             expect(code).toContain('INSERT INTO root_users (');
         });
     });
+
+    describe('generate - markdown', () => {
+        it('should generate Markdown document with tables for nested object arrays', () => {
+            const md = service.generate(testObject, 'markdown');
+            expect(md).toContain('# Document');
+            expect(md).toContain('| **name** | JSON Explorer |');
+            expect(md).toContain('## Users');
+            expect(md).toContain('| id | name | email |');
+            expect(md).toContain('| 1 | Alice |  |');
+            expect(md).toContain('| 2 | Bob | bob@example.com |');
+        });
+    });
 });

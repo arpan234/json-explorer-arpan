@@ -5,20 +5,35 @@
             (ngModelChange)="selectedLanguage.set($event)"
             aria-label="Target language"
         >
+            <mat-button-toggle value="markdown">Markdown</mat-button-toggle>
             <mat-button-toggle value="typescript">TypeScript</mat-button-toggle>
             <mat-button-toggle value="go">Go</mat-button-toggle>
             <mat-button-toggle value="python">Python</mat-button-toggle>
             <mat-button-toggle value="sql">SQL</mat-button-toggle>
         </mat-button-toggle-group>
 
-        <button
-            mat-icon-button
-            (click)="copyCode()"
-            matTooltip="Copy generated code"
-            [disabled]="!generatedCode()"
-        >
-            <mat-icon>content_copy</mat-icon>
-        </button>
+        <div class="codegen-actions">
+            @if (selectedLanguage() === 'markdown') {
+                <button
+                    mat-stroked-button
+                    class="open-md-btn"
+                    (click)="openInMarkdownReader()"
+                    [disabled]="!generatedCode()"
+                    matTooltip="Preview generated Markdown in Markdown Reader"
+                >
+                    <mat-icon>open_in_new</mat-icon>
+                    Open in Markdown Reader
+                </button>
+            }
+            <button
+                mat-icon-button
+                (click)="copyCode()"
+                matTooltip="Copy generated code"
+                [disabled]="!generatedCode()"
+            >
+                <mat-icon>content_copy</mat-icon>
+            </button>
+        </div>
     </div>
 
     <div class="editor-wrapper">

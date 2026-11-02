@@ -1,5 +1,17 @@
 <div class="chart-container">
     <div class="chart-controls">
+        @if (availableArrays().length > 1) {
+            <mat-button-toggle-group
+                [ngModel]="activeArrayEntry()?.path"
+                (ngModelChange)="onArrayPathChange($event)"
+                aria-label="Select JSON Array"
+            >
+                @for (entry of availableArrays(); track entry.path) {
+                    <mat-button-toggle [value]="entry.path">{{ entry.label }}</mat-button-toggle>
+                }
+            </mat-button-toggle-group>
+        }
+
         <mat-button-toggle-group
             [ngModel]="chartType()"
             (ngModelChange)="chartType.set($event)"

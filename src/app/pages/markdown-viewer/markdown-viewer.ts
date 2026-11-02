@@ -1,8 +1,10 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, PLATFORM_ID, inject, signal } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 
+import { JsonParserService } from '../../core/services/json-parser/json-parser.service';
 import { MarkdownInputComponent } from './components/markdown-input/markdown-input';
 import { MarkdownPreviewComponent } from './components/markdown-preview/markdown-preview';
 
@@ -16,6 +18,8 @@ import { MarkdownPreviewComponent } from './components/markdown-preview/markdown
 })
 export class MarkdownViewerComponent {
     private readonly breakpointObserver = inject(BreakpointObserver);
+    private readonly parserService = inject(JsonParserService);
+    private readonly platformId = inject(PLATFORM_ID);
 
     readonly markdownContent = signal('');
     readonly panelWidth = signal(35);
@@ -27,6 +31,21 @@ export class MarkdownViewerComponent {
     private resizing = false;
 
     constructor() {
+        const transferred = this.parserService.pendingMarkdownTransfer();
+        if (transferred) {
+            this.markdownContent.set(transferred);
+            this.parserService.pendingMarkdownTransfer.set(null);
+        } else if (isPlatformBrowser(this.platformId)) {
+            const params = new URLSearchParams(window.location.search);
+            const encoded = params.get('md');
+            if (encoded) {
+                const decoded = this.parserService.decodeFromUrl(encoded);
+                if (decoded) {
+                    this.markdownContent.set(decoded);
+                }
+            }
+        }
+
         this.breakpointObserver.observe('(max-width: 768px)').subscribe((result) => {
             this.isMobile.set(result.matches);
         });

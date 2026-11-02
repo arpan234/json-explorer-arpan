@@ -5,7 +5,67 @@
 }
 
 .table-container {
-    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+
+    .table-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 10px;
+        padding: 10px 16px;
+        border-bottom: 1px solid var(--app-glass-border);
+        background: var(--app-glass-bg);
+        backdrop-filter: blur(var(--app-glass-blur));
+
+        &__left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        &__right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+    }
+
+    .dataset-badge {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: var(--mat-sys-primary);
+        background: rgba(0, 240, 255, 0.08);
+        border: 1px solid var(--app-glass-border);
+        padding: 4px 12px;
+        border-radius: 14px;
+    }
+
+    .export-btn {
+        height: 32px;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 0.76rem;
+        font-weight: 600;
+        border-radius: 6px;
+        padding: 0 12px;
+
+        mat-icon {
+            font-size: 16px;
+            width: 16px;
+            height: 16px;
+            margin-right: 4px;
+        }
+    }
+
+    .table-scroll {
+        flex: 1;
+        overflow: auto;
+        padding: 16px;
+    }
 
     table {
         width: 100%;

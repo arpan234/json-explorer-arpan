@@ -82,13 +82,38 @@
 .error-message {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 8px;
-    padding: 10px 16px;
+    padding: 8px 16px;
     background: var(--mat-sys-error-container);
     color: var(--mat-sys-on-error-container);
     font-size: 0.82rem;
     font-weight: 500;
     border-top: 1px solid rgba(255, 0, 0, 0.1);
+
+    &__text {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .repair-inline-btn {
+        height: 28px;
+        font-size: 0.75rem;
+        padding: 0 10px;
+        flex-shrink: 0;
+        color: var(--mat-sys-on-error-container);
+        border-color: currentColor;
+
+        mat-icon {
+            font-size: 15px;
+            width: 15px;
+            height: 15px;
+            margin-right: 4px;
+        }
+    }
 }
 
 .input-footer {

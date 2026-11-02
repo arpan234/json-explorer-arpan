@@ -1,7 +1,8 @@
-import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { FormsModule } from '@angular/forms';
 import { JsonNode } from '../../../../core/interfaces';
+import { JsonParserService } from '../../../../core/services/json-parser/json-parser.service';
 import { NgxChartsModule } from '@swimlane/ngx-charts';
 
 type ChartType = 'bar' | 'line' | 'pie';
@@ -15,11 +16,25 @@ type ChartType = 'bar' | 'line' | 'pie';
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class JsonChartComponent {
+    private readonly parserService = inject(JsonParserService);
+
     readonly data = input.required<JsonNode>();
     readonly chartType = signal<ChartType>('bar');
+    readonly selectedArrayPath = signal('');
+
+    readonly availableArrays = computed(() => this.parserService.findChartArrays(this.data()));
+
+    readonly activeArrayEntry = computed(() => {
+        const list = this.availableArrays();
+        if (list.length === 0) return null;
+        const selected = this.selectedArrayPath();
+        return list.find((item) => item.path === selected) ?? list[0];
+    });
+
+    readonly activeArrayNode = computed(() => this.activeArrayEntry()?.node ?? this.data());
 
     readonly numericFields = computed(() => {
-        const root = this.data();
+        const root = this.activeArrayNode();
         if (root.type !== 'array' || !root.children?.length) return [];
 
         const fields = new Set<string>();
@@ -42,7 +57,7 @@ export class JsonChartComponent {
     });
 
     readonly labelField = computed(() => {
-        const root = this.data();
+        const root = this.activeArrayNode();
         if (root.type !== 'array' || !root.children?.length) return '';
 
         const firstChild = root.children[0];
@@ -53,7 +68,7 @@ export class JsonChartComponent {
     });
 
     readonly chartData = computed(() => {
-        const root = this.data();
+        const root = this.activeArrayNode();
         const field = this.activeField();
         const label = this.labelField();
 
@@ -70,6 +85,11 @@ export class JsonChartComponent {
                 };
             });
     });
+
+    onArrayPathChange(path: string): void {
+        this.selectedArrayPath.set(path);
+        this.selectedField.set('');
+    }
 
     onFieldChange(field: string): void {
         this.selectedField.set(field);

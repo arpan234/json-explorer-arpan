@@ -8,6 +8,18 @@
     <div class="input-header">
         <span class="input-title">JSON Input</span>
         <div class="input-actions">
+            <button
+                mat-button
+                (click)="onRepair()"
+                matTooltip="Fix trailing commas, single quotes, unquoted keys, or escaped JSON"
+            >
+                <mat-icon>auto_fix_high</mat-icon>
+                Repair
+            </button>
+            <button mat-button (click)="onMinify()" matTooltip="Minify / Compact JSON">
+                <mat-icon>compress</mat-icon>
+                Minify
+            </button>
             <button mat-button (click)="onLoadSample()">
                 <mat-icon>science</mat-icon>
                 Sample
@@ -32,8 +44,14 @@
 
     @if (error(); as err) {
         <div class="error-message">
-            <mat-icon>error_outline</mat-icon>
-            {{ err }}
+            <div class="error-message__text">
+                <mat-icon>error_outline</mat-icon>
+                <span>{{ err }}</span>
+            </div>
+            <button mat-stroked-button class="repair-inline-btn" (click)="onRepair()">
+                <mat-icon>auto_fix_high</mat-icon>
+                Auto-Repair
+            </button>
         </div>
     }
 

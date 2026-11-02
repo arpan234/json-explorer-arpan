@@ -82,4 +82,31 @@ describe('JsonInputComponent', () => {
             expect(emitSpy).not.toHaveBeenCalled();
         });
     });
+
+    describe('onRepair() and onMinify()', () => {
+        it('should repair malformed JSON and emit jsonParsed', () => {
+            const fixture = TestBed.createComponent(JsonInputComponent);
+            const component = fixture.componentInstance;
+            const emitSpy = vi.spyOn(component.jsonParsed, 'emit');
+
+            component.inputText.set("{ name: 'Alice', active: True, }");
+            component.onRepair();
+
+            expect(component.error()).toBeNull();
+            expect(JSON.parse(component.inputText())).toEqual({ name: 'Alice', active: true });
+            expect(emitSpy).toHaveBeenCalled();
+        });
+
+        it('should minify valid JSON and emit jsonParsed', () => {
+            const fixture = TestBed.createComponent(JsonInputComponent);
+            const component = fixture.componentInstance;
+            const emitSpy = vi.spyOn(component.jsonParsed, 'emit');
+
+            component.inputText.set('{\n  "a": 1,\n  "b": 2\n}');
+            component.onMinify();
+
+            expect(component.inputText()).toBe('{"a":1,"b":2}');
+            expect(emitSpy).toHaveBeenCalledWith('{"a":1,"b":2}');
+        });
+    });
 });

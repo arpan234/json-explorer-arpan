@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatIconModule } from '@angular/material/icon';
@@ -9,6 +10,7 @@ import { EditorComponent } from 'ngx-monaco-editor-v2';
 
 import { DEFAULT_MONACO_OPTIONS } from '../../../../core/constants/json-viewer.constants';
 import { CodeGeneratorService, CodeLang } from '../../../../core/services/code-generator/code-generator.service';
+import { JsonParserService } from '../../../../core/services/json-parser/json-parser.service';
 
 @Component({
     selector: 'app-json-codegen',
@@ -27,11 +29,13 @@ import { CodeGeneratorService, CodeLang } from '../../../../core/services/code-g
 })
 export class JsonCodegenComponent {
     private readonly generatorService = inject(CodeGeneratorService);
+    private readonly parserService = inject(JsonParserService);
+    private readonly router = inject(Router);
     private readonly snackBar = inject(MatSnackBar);
 
     readonly rawJson = input.required<string>();
 
-    readonly selectedLanguage = signal<CodeLang>('typescript');
+    readonly selectedLanguage = signal<CodeLang>('markdown');
 
     readonly generatedCode = computed(() => {
         const raw = this.rawJson();
@@ -56,5 +60,12 @@ export class JsonCodegenComponent {
             navigator.clipboard.writeText(code);
             this.snackBar.open('Code copied to clipboard', '', { duration: 2000 });
         }
+    }
+
+    openInMarkdownReader(): void {
+        const md = this.generatedCode();
+        if (!md) return;
+        this.parserService.pendingMarkdownTransfer.set(md);
+        this.router.navigate(['/markdown']);
     }
 }

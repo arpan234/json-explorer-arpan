@@ -57,6 +57,30 @@
         }
     }
 
+    .codegen-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .open-md-btn {
+        height: 32px;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 0.76rem;
+        font-weight: 600;
+        border-radius: 6px;
+        padding: 0 10px;
+        border-color: var(--app-glass-border);
+        color: var(--mat-sys-primary);
+
+        mat-icon {
+            font-size: 16px;
+            width: 16px;
+            height: 16px;
+            margin-right: 4px;
+        }
+    }
+
     button[mat-icon-button] {
         color: var(--mat-sys-on-surface-variant);
         transition: all 0.2s ease;

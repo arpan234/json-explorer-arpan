@@ -2,20 +2,23 @@ import {
     ChangeDetectionStrategy,
     Component,
     ElementRef,
+    effect,
     inject,
+    input,
     output,
     signal,
     viewChild,
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { FormsModule } from '@angular/forms';
 import { JsonParserService } from '../../../../core/services/json-parser/json-parser.service';
 
 @Component({
     selector: 'app-json-input',
     standalone: true,
-    imports: [MatButtonModule, MatIconModule, FormsModule],
+    imports: [MatButtonModule, MatIconModule, MatTooltipModule, FormsModule],
     templateUrl: './json-input.html',
     styleUrl: './json-input.scss',
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -23,6 +26,7 @@ import { JsonParserService } from '../../../../core/services/json-parser/json-pa
 export class JsonInputComponent {
     private readonly parserService = inject(JsonParserService);
 
+    readonly externalJson = input<string>('');
     readonly jsonParsed = output<string>();
 
     readonly inputText = signal('');
@@ -30,6 +34,16 @@ export class JsonInputComponent {
     readonly isDragOver = signal(false);
 
     readonly fileInput = viewChild<ElementRef<HTMLInputElement>>('fileInput');
+
+    constructor() {
+        effect(() => {
+            const ext = this.externalJson();
+            if (ext && ext !== this.inputText()) {
+                this.inputText.set(ext);
+                this.error.set(null);
+            }
+        });
+    }
 
     onPaste(event: ClipboardEvent): void {
         const text = event.clipboardData?.getData('text/plain')?.trim();
@@ -58,6 +72,40 @@ export class JsonInputComponent {
 
         this.error.set(null);
         this.jsonParsed.emit(raw);
+    }
+
+    onRepair(): void {
+        const raw = this.inputText().trim();
+        if (!raw) {
+            this.error.set('Please enter some JSON');
+            return;
+        }
+
+        const result = this.parserService.repairJson(raw);
+        if (result.valid) {
+            this.inputText.set(result.repaired);
+            this.error.set(null);
+            this.jsonParsed.emit(result.repaired);
+        } else {
+            this.error.set(result.error ?? 'Could not auto-repair JSON');
+        }
+    }
+
+    onMinify(): void {
+        const raw = this.inputText().trim();
+        if (!raw) {
+            this.error.set('Please enter some JSON');
+            return;
+        }
+
+        const result = this.parserService.minify(raw);
+        if (result.valid) {
+            this.inputText.set(result.minified);
+            this.error.set(null);
+            this.jsonParsed.emit(result.minified);
+        } else {
+            this.error.set(result.error ?? 'Invalid JSON');
+        }
     }
 
     onFileSelect(event: Event): void {

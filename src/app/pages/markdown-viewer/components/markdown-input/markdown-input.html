@@ -8,6 +8,14 @@
     <div class="input-header">
         <span class="input-title">Markdown Input</span>
         <div class="input-actions">
+            <button
+                mat-button
+                (click)="formatMarkdownTables()"
+                matTooltip="Align & prettify Markdown tables"
+            >
+                <mat-icon>grid_on</mat-icon>
+                Format Tables
+            </button>
             <button mat-button (click)="onLoadSample()">
                 <mat-icon>science</mat-icon>
                 Sample
@@ -19,7 +27,83 @@
         </div>
     </div>
 
+    <div class="format-toolbar">
+        <button
+            type="button"
+            class="fmt-btn"
+            (click)="insertFormatting('**', '**', 'bold')"
+            matTooltip="Bold (**text**)"
+        >
+            <mat-icon>format_bold</mat-icon>
+        </button>
+        <button
+            type="button"
+            class="fmt-btn"
+            (click)="insertFormatting('*', '*', 'italic')"
+            matTooltip="Italic (*text*)"
+        >
+            <mat-icon>format_italic</mat-icon>
+        </button>
+        <button
+            type="button"
+            class="fmt-btn"
+            (click)="insertFormatting('~~', '~~', 'strikethrough')"
+            matTooltip="Strikethrough (~~text~~)"
+        >
+            <mat-icon>strikethrough_s</mat-icon>
+        </button>
+        <div class="fmt-divider"></div>
+        <button
+            type="button"
+            class="fmt-btn"
+            (click)="insertLinePrefix('## ')"
+            matTooltip="Heading (## )"
+        >
+            <mat-icon>title</mat-icon>
+        </button>
+        <button
+            type="button"
+            class="fmt-btn"
+            (click)="insertLinePrefix('- ')"
+            matTooltip="Bullet List (- )"
+        >
+            <mat-icon>format_list_bulleted</mat-icon>
+        </button>
+        <button
+            type="button"
+            class="fmt-btn"
+            (click)="insertFormatting('[', '](https://example.com)', 'link')"
+            matTooltip="Insert Link"
+        >
+            <mat-icon>link</mat-icon>
+        </button>
+        <button
+            type="button"
+            class="fmt-btn"
+            (click)="insertFormatting('\n```typescript\n', '\n```\n', '// code')"
+            matTooltip="Insert Code Block"
+        >
+            <mat-icon>code</mat-icon>
+        </button>
+        <button
+            type="button"
+            class="fmt-btn"
+            (click)="insertTableTemplate()"
+            matTooltip="Insert Markdown Table"
+        >
+            <mat-icon>table_chart</mat-icon>
+        </button>
+
+        <span class="fmt-spacer"></span>
+        @if (docStats(); as stats) {
+            <span class="doc-stats">
+                {{ stats.words }} words · {{ stats.chars }} chars · ~{{ stats.readingTimeMin }}m read
+            </span>
+        }
+    </div>
+
     <textarea
+        #editorArea
         class="markdown-textarea"
         [ngModel]="inputText()"
         (ngModelChange)="inputText.set($event)"

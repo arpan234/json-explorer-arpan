@@ -6,7 +6,9 @@ import {
     signal,
     HostListener,
     effect,
+    PLATFORM_ID,
 } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatButtonModule } from '@angular/material/button';
@@ -57,6 +59,7 @@ export class ViewerComponent {
     private readonly searchService = inject(JsonSearchService);
     private readonly snackBar = inject(MatSnackBar);
     private readonly breakpointObserver = inject(BreakpointObserver);
+    private readonly platformId = inject(PLATFORM_ID);
 
     readonly rawJson = signal('');
     readonly viewMode = signal<ViewMode>('tree');
@@ -114,6 +117,23 @@ export class ViewerComponent {
     });
 
     constructor() {
+        // Check if JSON was transferred from Markdown Reader
+        const transferred = this.parserService.pendingJsonTransfer();
+        if (transferred) {
+            this.rawJson.set(transferred);
+            this.parserService.pendingJsonTransfer.set(null);
+            this.viewMode.set('table');
+        } else if (isPlatformBrowser(this.platformId)) {
+            const params = new URLSearchParams(window.location.search);
+            const encoded = params.get('json');
+            if (encoded) {
+                const decoded = this.parserService.decodeFromUrl(encoded);
+                if (decoded && this.parserService.validate(decoded).valid) {
+                    this.rawJson.set(decoded);
+                }
+            }
+        }
+
         // Reset or adjust activeMatchIndex when search results change
         effect(() => {
             const matches = this.directMatches();
@@ -191,24 +211,11 @@ export class ViewerComponent {
     });
 
     readonly isTableCompatible = computed(() => {
-        const root = this.rootNode();
-        if (!root) return false;
-        if (root.type === 'array' && root.children && root.children.length > 0) {
-            return root.children.every((child) => child.type === 'object');
-        }
-        return false;
+        return this.parserService.findTableArrays(this.rootNode()).length > 0;
     });
 
     readonly isChartCompatible = computed(() => {
-        const root = this.rootNode();
-        if (!root) return false;
-        if (root.type === 'array' && root.children && root.children.length > 0) {
-            return root.children.some(
-                (child) =>
-                    child.type === 'object' && child.children?.some((gc) => gc.type === 'number'),
-            );
-        }
-        return false;
+        return this.parserService.findChartArrays(this.rootNode()).length > 0;
     });
 
     onJsonInput(raw: string): void {
@@ -268,6 +275,15 @@ export class ViewerComponent {
             navigator.clipboard.writeText(raw);
             this.snackBar.open('Copied to clipboard', '', { duration: 2000 });
         }
+    }
+
+    shareJson(): void {
+        const raw = this.rawJson();
+        if (!raw || !isPlatformBrowser(this.platformId)) return;
+        const encoded = this.parserService.encodeForUrl(raw);
+        const shareUrl = `${window.location.origin}${window.location.pathname}?json=${encoded}`;
+        navigator.clipboard.writeText(shareUrl);
+        this.snackBar.open('Shareable link copied to clipboard', '', { duration: 2500 });
     }
 
     copyPath(): void {

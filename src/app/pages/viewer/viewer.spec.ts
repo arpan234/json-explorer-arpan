@@ -128,4 +128,22 @@ describe('ViewerComponent', () => {
             expect(fixture.componentInstance.panelWidth()).toBe(35);
         });
     });
+
+    describe('nested array compatibility (Table & Chart)', () => {
+        it('should enable Table and Chart tabs when nested object arrays exist (like Sample JSON)', () => {
+            const fixture = TestBed.createComponent(ViewerComponent);
+            const component = fixture.componentInstance;
+            component.onJsonInput(
+                JSON.stringify({
+                    name: 'Sample',
+                    users: [
+                        { id: 1, name: 'Alice', score: 95 },
+                        { id: 2, name: 'Bob', score: 87 },
+                    ],
+                }),
+            );
+            expect(component.isTableCompatible()).toBe(true);
+            expect(component.isChartCompatible()).toBe(true);
+        });
+    });
 });

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 
-export type CodeLang = 'typescript' | 'go' | 'python' | 'sql';
+export type CodeLang = 'markdown' | 'typescript' | 'go' | 'python' | 'sql';
 
 type SchemaType = 'string' | 'integer' | 'number' | 'boolean' | 'null' | 'array' | 'object' | 'any';
 
@@ -16,6 +16,10 @@ export class CodeGeneratorService {
     generate(value: unknown, lang: CodeLang): string {
         if (value === undefined) return '';
 
+        if (lang === 'markdown') {
+            return this.toMarkdown(value, 'Document');
+        }
+
         const schema = this.inferSchema(value);
 
         switch (lang) {
@@ -30,6 +34,86 @@ export class CodeGeneratorService {
             default:
                 return '';
         }
+    }
+
+    // ==========================================
+    // Markdown Document & Table Generator
+    // ==========================================
+    private toMarkdown(value: unknown, title = 'Document', level = 1): string {
+        const headingPrefix = '#'.repeat(Math.min(level, 6));
+        const escapeCell = (val: unknown): string => {
+            if (val === null || val === undefined) return '';
+            const str = typeof val === 'object' ? JSON.stringify(val) : String(val);
+            return str.replace(/\|/g, '\\|').replace(/\r?\n/g, ' ');
+        };
+
+        const renderObjectArrayTable = (items: Record<string, unknown>[]): string => {
+            const keys = new Set<string>();
+            items.forEach((item) => Object.keys(item).forEach((k) => keys.add(k)));
+            const cols = Array.from(keys);
+            if (cols.length === 0) return '_Empty table_';
+
+            const header = `| ${cols.map((c) => escapeCell(c)).join(' | ')} |`;
+            const sep = `| ${cols.map(() => '---').join(' | ')} |`;
+            const rows = items.map(
+                (item) => `| ${cols.map((c) => escapeCell(item[c])).join(' | ')} |`,
+            );
+            return [header, sep, ...rows].join('\n');
+        };
+
+        if (Array.isArray(value)) {
+            if (value.length === 0) return `${headingPrefix} ${title}\n\n_Empty array_`;
+            const allObjects = value.every(
+                (item) => typeof item === 'object' && item !== null && !Array.isArray(item),
+            );
+            if (allObjects) {
+                const table = renderObjectArrayTable(value as Record<string, unknown>[]);
+                return level === 1 ? `# ${title}\n\n${table}` : `${headingPrefix} ${title}\n\n${table}`;
+            }
+            const list = value
+                .map((item) =>
+                    typeof item === 'object' && item !== null
+                        ? `- \`${JSON.stringify(item)}\``
+                        : `- ${String(item)}`,
+                )
+                .join('\n');
+            return `${headingPrefix} ${title}\n\n${list}`;
+        }
+
+        if (typeof value === 'object' && value !== null) {
+            const entries = Object.entries(value as Record<string, unknown>);
+            const primitives = entries.filter(
+                ([_, v]) => typeof v !== 'object' || v === null,
+            );
+            const complexes = entries.filter(
+                ([_, v]) => typeof v === 'object' && v !== null,
+            );
+
+            const sections: string[] = [];
+            if (level === 1) {
+                sections.push(`# ${title}`);
+            } else {
+                sections.push(`${headingPrefix} ${title}`);
+            }
+
+            if (primitives.length > 0) {
+                const propRows = primitives.map(
+                    ([k, v]) => `| **${escapeCell(k)}** | ${escapeCell(v)} |`,
+                );
+                sections.push(
+                    ['| Property | Value |', '| --- | --- |', ...propRows].join('\n'),
+                );
+            }
+
+            for (const [k, v] of complexes) {
+                const sectionTitle = this.capitalize(k);
+                sections.push(this.toMarkdown(v, sectionTitle, level + 1));
+            }
+
+            return sections.join('\n\n');
+        }
+
+        return `${headingPrefix} ${title}\n\n${String(value)}`;
     }
 
     private inferSchema(value: unknown): Schema {

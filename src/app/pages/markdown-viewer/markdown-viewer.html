@@ -25,7 +25,10 @@
     <!-- Left Panel: Input -->
     @if (!isMobile() || activeMobileTab() === 'input') {
         <div class="input-panel" [style.width.%]="isMobile() ? 100 : panelWidth()">
-            <app-markdown-input (markdownParsed)="onMarkdownInput($event)" />
+            <app-markdown-input
+                [externalMarkdown]="markdownContent()"
+                (markdownParsed)="onMarkdownInput($event)"
+            />
         </div>
     }
 

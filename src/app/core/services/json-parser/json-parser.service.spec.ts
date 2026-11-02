@@ -111,4 +111,58 @@ describe('JsonParserService', () => {
             expect(value['user']['name']).toBe('Jane');
         });
     });
+
+    describe('repairJson', () => {
+        it('should fix unquoted keys, single quotes, trailing commas, and Python booleans', () => {
+            const broken = "{ name: 'Alice', active: True, tags: ['a', 'b',], }";
+            const res = service.repairJson(broken);
+            expect(res.valid).toBe(true);
+            expect(JSON.parse(res.repaired)).toEqual({
+                name: 'Alice',
+                active: true,
+                tags: ['a', 'b'],
+            });
+        });
+
+        it('should unescape stringified JSON', () => {
+            const escaped = '"{\\"id\\": 1, \\"name\\": \\"Bob\\"}"';
+            const res = service.repairJson(escaped);
+            expect(res.valid).toBe(true);
+            expect(JSON.parse(res.repaired)).toEqual({ id: 1, name: 'Bob' });
+        });
+    });
+
+    describe('findTableArrays & nodeArrayToMarkdownTable', () => {
+        it('should find nested object arrays and convert to Markdown table', () => {
+            const parsed = service.parse(
+                JSON.stringify({
+                    app: 'demo',
+                    users: [
+                        { id: 1, name: 'Alice' },
+                        { id: 2, name: 'Bob' },
+                    ],
+                }),
+            );
+            const arrays = service.findTableArrays(parsed.data);
+            expect(arrays).toHaveLength(1);
+            expect(arrays[0].path).toBe('$.users');
+
+            const md = service.nodeArrayToMarkdownTable(arrays[0].node);
+            expect(md).toContain('| id | name |');
+            expect(md).toContain('| 1 | Alice |');
+            expect(md).toContain('| 2 | Bob |');
+        });
+    });
+
+    describe('extractMarkdownTablesToJson', () => {
+        it('should parse Markdown tables back into typed JSON arrays', () => {
+            const md = `# Report\n\n| id | name | active |\n| --- | --- | --- |\n| 1 | Alice | true |\n| 2 | Bob | false |`;
+            const tables = service.extractMarkdownTablesToJson(md);
+            expect(tables).toHaveLength(1);
+            expect(tables[0]).toEqual([
+                { id: 1, name: 'Alice', active: true },
+                { id: 2, name: 'Bob', active: false },
+            ]);
+        });
+    });
 });
